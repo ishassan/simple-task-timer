@@ -13,6 +13,7 @@ Firefox Add-ons page: https://addons.mozilla.org/en-US/firefox/addon/simple-task
 - Done tasks go to a folded "Done" group at the bottom. Start a done task to bring it back, or delete all done tasks at once.
 - A task can have a goal. The timer keeps counting after the goal. When the task reaches its goal, the toolbar badge turns green, and you get one desktop notification if you allowed notifications.
 - While a task runs, the toolbar icon shows its time.
+- An update from version 3.x keeps your tasks with their names, times and goals. A task that was running keeps running.
 
 ## Keys
 
@@ -47,11 +48,17 @@ Unit tests (Node.js 20 or newer, no packages):
 node --test
 ```
 
-Browser test in headless Firefox (needs `pip install selenium`):
+Browser tests in headless Firefox (need `pip install selenium`):
 
 ```bash
 python3 ci/goal_test.py
 ```
+
+```bash
+python3 ci/update_test.py
+```
+
+`ci/goal_test.py` tests the buttons, the keys, Undo, the goal and the notification. `ci/update_test.py` installs 3.11.0 (from the git tag `v3.11.0`), makes tasks in it, updates to this version, and checks that the tasks are kept.
 
 `ci/android_test.py` runs the add-on in an Android emulator. GitHub Actions runs these tests (see `.github/workflows/`).
 

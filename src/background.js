@@ -77,4 +77,5 @@ browser.storage.onChanged.addListener((changes, area) => {
 });
 
 browser.runtime.onStartup.addListener(refresh);
-browser.runtime.onInstalled.addListener(refresh);
+// An update from 3.x brings the old tasks. The save calls refresh().
+browser.runtime.onInstalled.addListener(() => Store.importV3().finally(refresh));

@@ -135,6 +135,50 @@
     return update(tasks, id, t => ({ ...t, goalNotified: true }));
   }
 
+  // Converts the task list of version 3.x and adds it after the list.
+  // A 3.x task: {text, current_hours, current_mins, current_secs, goal_hours,
+  // goal_mins, indefinite, notified, last_tick}. Very old 3.x data has
+  // {current, goal} in hours instead. A task with a last_tick ran: the time
+  // since that tick counts, as it did in 3.x. Only the task that ticked last
+  // keeps running, and none does when the list already has a running task.
+  function fromV3(old, tasks, now, makeId) {
+    if (!Array.isArray(old)) return tasks;
+    const num = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+    let list = tasks;
+    const added = [];
+    for (const o of old) {
+      if (!o || typeof o !== 'object') continue;
+      const oldHours = o.current_hours === undefined;
+      const elapsedMs = oldHours
+        ? Math.round(num(o.current) * HOUR)
+        : num(o.current_hours) * HOUR + num(o.current_mins) * MINUTE + num(o.current_secs) * SECOND;
+      const goal = oldHours
+        ? Math.round(num(o.goal) * HOUR)
+        : num(o.goal_hours) * HOUR + num(o.goal_mins) * MINUTE;
+      const tick = typeof o.last_tick === 'number' ? Math.min(o.last_tick, now) : null;
+      const task = {
+        id: makeId(),
+        name: String(o.text == null ? '' : o.text).trim() || nextName(list),
+        elapsedMs,
+        startedAt: tick,
+        goalMs: o.indefinite || goal <= 0 ? null : goal,
+        goalNotified: false,
+        done: false,
+        createdAt: now,
+        lastRunAt: tick,
+      };
+      task.goalNotified = o.notified === true && goalReached(task, now);
+      added.push(task);
+      list = [...list, task];
+    }
+
+    let keep = null;
+    if (!runningTask(tasks)) {
+      for (const t of added) if (isRunning(t) && (!keep || t.startedAt > keep.startedAt)) keep = t;
+    }
+    return list.map(t => (added.includes(t) && t !== keep ? stopped(t, now) : t));
+  }
+
   // Reads a duration. Returns milliseconds, null for an empty text, or NaN
   // for a text it cannot read.
   //   "1:20:00" = h:mm:ss, "20:00" = m:ss, "90" = minutes,
@@ -203,7 +247,7 @@
 
   const api = {
     isRunning, shownMs, goalReached, goalTime, runningTask, lastTask, nextName,
-    create, start, pause, reset, markDone, remove, removeDone, edit, setGoalNotified,
+    create, start, pause, reset, markDone, remove, removeDone, edit, setGoalNotified, fromV3,
     parseDuration, formatClock, formatShort, badgeText,
   };
 

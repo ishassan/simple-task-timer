@@ -1,5 +1,6 @@
 # Runs the unit tests, then runs the add-on in headless Firefox: the task
-# buttons, Undo, the goal, the badge and the optional notification.
+# buttons, Undo, the goal, the badge and the optional notification, and the
+# update from 3.11.0.
 name: Goal test
 
 on:
@@ -9,6 +10,7 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'ci/goal_test.py'
+      - 'ci/update_test.py'
       - '.github/workflows/goal-test.yml'
 
 jobs:
@@ -17,6 +19,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # the update test needs the tag v3.11.0
 
       - uses: actions/setup-node@v7
         with:
@@ -40,3 +44,8 @@ jobs:
         env:
           FIREFOX_BIN: ${{ steps.firefox.outputs.firefox-path }}
         run: python3 ci/goal_test.py
+
+      - name: Run the update test
+        env:
+          FIREFOX_BIN: ${{ steps.firefox.outputs.firefox-path }}
+        run: python3 ci/update_test.py

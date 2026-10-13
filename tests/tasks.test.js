@@ -186,3 +186,63 @@ test('formats', () => {
   assert.equal(T.badgeText(65 * MIN), '1:05');
   assert.equal(T.badgeText(12 * 60 * MIN + 30 * MIN), '12h');
 });
+
+test('fromV3 reads 3.x tasks: time, goal, no goal, old hour format, bad entries', () => {
+  const old = [
+    { text: 'Report', current_hours: 1, current_mins: 2, current_secs: 3, goal_hours: 0, goal_mins: 45,
+      indefinite: false, notified: true, last_tick: null },
+    { text: 'Email', current_hours: 0, current_mins: 5, current_secs: 0, goal_hours: 2, goal_mins: 0,
+      indefinite: true, notified: false, last_tick: null },
+    { text: 'Zero goal', current_hours: 0, current_mins: 1, current_secs: 0, goal_hours: 0, goal_mins: 0 },
+    { text: 'Oldest', current: 1.5, goal: 2 },
+    null,
+    'text',
+  ];
+  const list = T.fromV3(old, [], 1000, id);
+  assert.deepEqual(names(list), ['Report', 'Email', 'Zero goal', 'Oldest']);
+  const [report, email, zero, oldest] = list;
+  assert.equal(report.elapsedMs, (3600 + 2 * 60 + 3) * 1000);
+  assert.equal(report.goalMs, 45 * MIN);
+  assert.equal(report.goalNotified, true);
+  assert.equal(report.startedAt, null);
+  assert.equal(report.done, false);
+  assert.equal(email.goalMs, null);
+  assert.equal(email.goalNotified, false);
+  assert.equal(zero.goalMs, null);
+  assert.equal(oldest.elapsedMs, 90 * MIN);
+  assert.equal(oldest.goalMs, 120 * MIN);
+  assert.equal(new Set(list.map(t => t.id)).size, 4);
+});
+
+test('fromV3 keeps the "notified" mark only while the goal is reached', () => {
+  const old = [{ text: 'A', current_hours: 0, current_mins: 10, current_secs: 0, goal_hours: 0, goal_mins: 30, notified: true }];
+  assert.equal(T.fromV3(old, [], 0, id)[0].goalNotified, false);
+});
+
+test('fromV3: the task that ticked last keeps running, the time since its tick counts', () => {
+  const old = [
+    { text: 'A', current_hours: 0, current_mins: 1, current_secs: 0, last_tick: 100 * MIN },
+    { text: 'B', current_hours: 0, current_mins: 2, current_secs: 0, last_tick: 105 * MIN },
+  ];
+  const now = 110 * MIN;
+  const [a, b] = T.fromV3(old, [], now, id);
+  assert.equal(a.startedAt, null);
+  assert.equal(a.elapsedMs, 11 * MIN);
+  assert.equal(b.startedAt, 105 * MIN);
+  assert.equal(T.shownMs(b, now), 7 * MIN);
+  assert.equal(b.lastRunAt, 105 * MIN);
+});
+
+test('fromV3 adds after the current list, pauses old tasks if one already runs, and names empty tasks', () => {
+  const current = T.create([], '', 0, 'new');
+  const old = [
+    { text: '', current_hours: 0, current_mins: 0, current_secs: 0, last_tick: 0 },
+    { text: '  ', current_hours: 0, current_mins: 0, current_secs: 0 },
+  ];
+  const list = T.fromV3(old, current, 5 * MIN, id);
+  assert.deepEqual(names(list), ['Task 1', 'Task 2', 'Task 3']);
+  assert.equal(list[0].startedAt, 0);
+  assert.equal(list[1].startedAt, null);
+  assert.equal(list[1].elapsedMs, 5 * MIN);
+  assert.deepEqual(T.fromV3('not a list', current, 0, id), current);
+});

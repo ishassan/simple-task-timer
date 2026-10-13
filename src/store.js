@@ -4,7 +4,8 @@
 //
 // Storage and permission helpers for the popup and the background script.
 // storage.local keys: tasks (the task list), notifyPromptDismissed (true
-// after "Not now" on the notification question).
+// after "Not now" on the notification question), v3Imported (true after the
+// 3.x tasks were added to the list).
 
 (function (root) {
   'use strict';
@@ -29,6 +30,21 @@
     return { before, after };
   }
 
+  // Version 3.x kept its tasks as JSON in localStorage['tasks']. Adds them to
+  // the list one time. The 3.x data stays where it is.
+  async function importV3() {
+    const r = await browser.storage.local.get({ v3Imported: false });
+    if (r.v3Imported) return;
+    let old = null;
+    try {
+      old = JSON.parse(localStorage.getItem('tasks'));
+    } catch (e) {
+      // No localStorage, or no valid 3.x data: there is nothing to add
+    }
+    const tasks = Tasks.fromV3(old, await loadTasks(), Date.now(), () => crypto.randomUUID());
+    await browser.storage.local.set({ tasks, v3Imported: true });
+  }
+
   async function promptDismissed() {
     const r = await browser.storage.local.get({ notifyPromptDismissed: false });
     return r.notifyPromptDismissed === true;
@@ -47,5 +63,5 @@
     return browser.permissions.request(NOTIFY);
   }
 
-  root.Store = { loadTasks, saveTasks, change, promptDismissed, dismissPrompt, canNotify, askToNotify };
+  root.Store = { loadTasks, saveTasks, change, importV3, promptDismissed, dismissPrompt, canNotify, askToNotify };
 })(globalThis);

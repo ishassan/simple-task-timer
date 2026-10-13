@@ -6,10 +6,13 @@ The screenshots are for a person to look at. The script only fails when the
 add-on could not be loaded at all; other steps are best effort, and each one
 is reported as OK or MISSED at the end.
 """
+import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 
@@ -135,6 +138,29 @@ def enable_remote_debugging():
     return False
 
 
+def test_copy():
+    """Copy src and add a test script that opens popup.html in a tab.
+
+    Firefox for Android can open the popup from its menu, but the menu
+    changes between versions. The tab makes sure the test reaches the popup.
+    """
+    copy = os.path.join(tempfile.mkdtemp(), 'src')
+    shutil.copytree('src', copy)
+    with open(os.path.join(copy, 'test-bg.js'), 'w') as f:
+        f.write("browser.tabs.create({url: 'popup.html', active: false});\n")
+    path = os.path.join(copy, 'manifest.json')
+    with open(path) as f:
+        manifest = json.load(f)
+    manifest['background']['scripts'].append('test-bg.js')
+    with open(path, 'w') as f:
+        json.dump(manifest, f)
+    return copy
+
+
+def on_popup():
+    return bool(find(r'^name$|^start$'))
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     adb('wait-for-device')
@@ -156,7 +182,7 @@ def main():
     log = open(log_path, 'w')
     webext = subprocess.Popen(
         ['web-ext', 'run', '--target', 'firefox-android', '--adb-device', DEVICE,
-         '--firefox-apk', PKG, '--source-dir', 'src', '--no-input', '--verbose'],
+         '--firefox-apk', PKG, '--source-dir', test_copy(), '--no-input', '--verbose'],
         stdout=log, stderr=subprocess.STDOUT)
     loaded = False
     end = time.time() + 240
@@ -178,20 +204,40 @@ def main():
     shot('after-install')
     tap(r'^OK$', timeout=5)
 
-    # Open the popup the way a user would: menu, Extensions, Simple Task Timer.
-    # In the menu, "Extensions" is a collapsed row; tapping it shows the list.
-    # On Android the popup opens as a page.
-    opened = (open_menu() and tap(r'mainMenu\.extensions|^Extensions')
-              and (shot('extensions-menu') or True) and tap(r'^Simple Task Timer$'))
-    time.sleep(4)
-    if opened and not find(r'^name$|^start$'):
+    # Try to open the popup the way a user would: menu, Extensions, Simple
+    # Task Timer. On Android the popup opens as a page. If the menu leads to
+    # the add-on manager instead, the screenshots show the way it went.
+    from_menu = False
+    if open_menu():
+        shot('main-menu')
+        if tap(r'mainMenu\.extensions|^Extensions'):
+            shot('extensions-menu')
+            if find(r'^Recommended$'):
+                back()  # the add-on manager, not the list of add-on buttons
+            elif tap(r'^Simple Task Timer$'):
+                time.sleep(4)
+                from_menu = on_popup()
+    shot('after-menu')
+    record('Opened the popup from the Firefox menu', from_menu)
+    if not from_menu:
+        for _ in range(3):  # go back to the browser
+            if find(r'Search or enter address|ADDRESSBAR_URL_BOX|composable_toolbar|'
+                    r'mozac_browser_toolbar_url_view|TabCounterTestTags.tabCounter|'
+                    r'ADDRESSBAR_TABS_COUNTER'):
+                break
+            back()
+
+    # The test script opened popup.html in a tab: go to that tab
+    opened = from_menu
+    if not opened:
         tap(r'TabCounterTestTags.tabCounter|ADDRESSBAR_TABS_COUNTER', timeout=5)
         time.sleep(2)
         shot('tabs')
-        opened = tap(r'Simple Task Timer|popup\.html', timeout=5)
+        tap(r'Simple Task Timer|popup\.html', timeout=5)
         time.sleep(3)
+        opened = on_popup()
     shot('popup')
-    record('Opened the popup from the Firefox menu', opened)
+    record('Opened the popup page', opened)
 
     # Start a task with no name: one tap on Start gives "Task 1"
     started = tap(r'^start$')

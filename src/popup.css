@@ -205,7 +205,7 @@ button.icon.delete:hover { color: var(--danger); }
 
 .edit {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
   padding: 4px 10px 10px;
 }
@@ -219,7 +219,7 @@ button.icon.delete:hover { color: var(--danger); }
 }
 
 .edit label:first-child { grid-column: 1 / -1; }
-.edit input { color: var(--text); }
+.edit input { color: var(--text); width: 100%; }
 
 .chips {
   grid-column: 1 / -1;

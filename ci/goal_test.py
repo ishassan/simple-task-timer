@@ -224,6 +224,10 @@ HARNESS_JS = '''
     await sleep(200);
     const keyForm = document.querySelector('form.edit');
     check('E opens the edit area', !!keyForm && keyForm.closest('.task').dataset.id === (await task('Task 1')).id);
+    const bodyRight = document.body.getBoundingClientRect().right;
+    const wide = keyForm ? [...keyForm.querySelectorAll('input, button')]
+      .filter(el => el.getBoundingClientRect().right > bodyRight + 0.5).map(el => el.name || el.textContent) : null;
+    check('the edit area fits in the popup width', wide && wide.length === 0, wide);
     key(document.activeElement, 'Escape');
     await sleep(200);
     check('Escape closes the edit area and goes back to the row',

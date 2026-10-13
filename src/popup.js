@@ -1,0 +1,324 @@
+// Simple Task Timer
+// Copyright (C) 2026 Islam Hassan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// The popup: the only page of the add-on.
+
+'use strict';
+
+const $ = id => document.getElementById(id);
+const UNDO_MS = 6000;
+
+let tasks = [];
+let editingId = null;   // the task whose edit area is open
+let canNotify = false;
+let promptDismissed = false;
+let toastTimer = null;
+let undoList = null;
+
+// ---- Changes ----
+
+// Applies fn(list, now) to the stored list and shows the result at once.
+// With a message, shows an Undo toast that puts back the old list.
+async function act(fn, message) {
+  const { before, after } = await Store.change(fn);
+  tasks = after;
+  render();
+  if (message) showToast(message, before);
+}
+
+function startNew(name) {
+  return act((list, now) => Tasks.create(list, name, now, crypto.randomUUID()));
+}
+
+function quoted(id) {
+  const t = tasks.find(x => x.id === id);
+  return t ? `"${t.name}"` : 'Task';
+}
+
+const actions = {
+  toggle(id) {
+    const t = tasks.find(x => x.id === id);
+    if (t && Tasks.isRunning(t)) return act((list, now) => Tasks.pause(list, id, now));
+    return act((list, now) => Tasks.start(list, id, now));
+  },
+  reset(id) {
+    return act(list => Tasks.reset(list, id), `Reset ${quoted(id)}`);
+  },
+  done(id) {
+    return act((list, now) => Tasks.markDone(list, id, now), `${quoted(id)} is done`);
+  },
+  delete(id) {
+    if (editingId === id) editingId = null;
+    return act(list => Tasks.remove(list, id), `Deleted ${quoted(id)}`);
+  },
+};
+
+// ---- Undo toast ----
+
+function showToast(message, before) {
+  undoList = before;
+  $('toast-text').textContent = message;
+  $('toast').hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, UNDO_MS);
+}
+
+function hideToast() {
+  $('toast').hidden = true;
+  undoList = null;
+}
+
+async function undo() {
+  if (!undoList) return;
+  const list = undoList;
+  hideToast();
+  await Store.saveTasks(list);
+  tasks = list;
+  render();
+}
+
+// ---- Drawing ----
+
+function setToggle(button, running) {
+  const label = running ? 'Pause' : 'Start';
+  button.title = label;
+  button.setAttribute('aria-label', label);
+  button.querySelector('use').setAttribute('href', running ? '#i-pause' : '#i-play');
+}
+
+// Updates the parts of a row that change every second
+function paintRow(li, task, now) {
+  const running = Tasks.isRunning(task);
+  const reached = Tasks.goalReached(task, now);
+  li.classList.toggle('running', running);
+  li.classList.toggle('reached', reached);
+  li.querySelector('.time').textContent = Tasks.formatClock(Tasks.shownMs(task, now));
+  const toggle = li.querySelector('.toggle');
+  if (!task.done) setToggle(toggle, running);
+
+  const goal = li.querySelector('.goal');
+  if (!goal) return;
+  goal.hidden = task.goalMs == null;
+  if (task.goalMs == null) return;
+  const part = task.goalMs > 0 ? Math.min(1, Tasks.shownMs(task, now) / task.goalMs) : 1;
+  goal.querySelector('.fill').style.width = (part * 100).toFixed(1) + '%';
+  goal.querySelector('.goal-text').textContent =
+    'goal ' + Tasks.formatShort(task.goalMs) + (reached ? ' reached' : '');
+}
+
+function makeRow(task, templateId, now) {
+  const li = $(templateId).content.firstElementChild.cloneNode(true);
+  li.dataset.id = task.id;
+  li.querySelector('.name').textContent = task.name;
+  li.querySelector('.name').title = task.name;
+  paintRow(li, task, now);
+  return li;
+}
+
+// A field of the edit area: name, time or goal
+function field(form, key) {
+  return form.querySelector(`[name="${key}"]`);
+}
+
+// Reads what the user typed in the open edit area, so a redraw keeps it
+function readEdit() {
+  const form = document.querySelector('form.edit');
+  if (!form) return null;
+  const active = document.activeElement;
+  return {
+    id: form.closest('.task').dataset.id,
+    values: { name: field(form, 'name').value, time: field(form, 'time').value, goal: field(form, 'goal').value },
+    initial: form.initial,
+    focus: active && active.form === form ? active.name : null,
+  };
+}
+
+function openEdit(li, task, kept) {
+  const form = $('edit-template').content.firstElementChild.cloneNode(true);
+  const initial = {
+    name: task.name,
+    time: Tasks.formatClock(Tasks.shownMs(task, Date.now())),
+    goal: task.goalMs == null ? '' : Tasks.formatShort(task.goalMs),
+  };
+  form.initial = kept ? kept.initial : initial;
+  const values = kept ? kept.values : initial;
+  field(form, 'name').value = values.name;
+  field(form, 'time').value = values.time;
+  field(form, 'goal').value = values.goal;
+  li.appendChild(form);
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    saveEdit(form, task.id);
+  });
+  form.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeEdit();
+    }
+  });
+  form.addEventListener('input', () => { form.querySelector('.error').hidden = true; });
+  for (const chip of form.querySelectorAll('[data-goal]')) {
+    chip.addEventListener('click', () => {
+      field(form, 'goal').value = chip.dataset.goal;
+      saveEdit(form, task.id);
+    });
+  }
+
+  const start = kept && kept.focus ? kept.focus : 'name';
+  field(form, start).focus();
+  if (!kept) field(form, start).select();
+}
+
+function closeEdit() {
+  editingId = null;
+  render();
+  $('name').focus();
+}
+
+function saveEdit(form, id) {
+  const error = form.querySelector('.error');
+  const changes = { name: field(form, 'name').value };
+
+  // A field the user did not change does not change the task. Then the
+  // time of a running task does not go back to the time the form opened with.
+  if (field(form, 'time').value.trim() !== form.initial.time) {
+    const ms = Tasks.parseDuration(field(form, 'time').value);
+    if (ms == null || Number.isNaN(ms)) {
+      error.textContent = 'Write the time like 1:20:00, 45m or 1h 5m.';
+      error.hidden = false;
+      field(form, 'time').focus();
+      return;
+    }
+    changes.elapsedMs = ms;
+  }
+  if (field(form, 'goal').value.trim() !== form.initial.goal) {
+    const ms = Tasks.parseDuration(field(form, 'goal').value);
+    if (Number.isNaN(ms) || ms === 0) {
+      error.textContent = 'Write the goal like 25m, 1h or 1:30:00, or leave it empty.';
+      error.hidden = false;
+      field(form, 'goal').focus();
+      return;
+    }
+    changes.goalMs = ms;
+  }
+
+  editingId = null;
+  act((list, now) => Tasks.edit(list, id, changes, now)).then(() => $('name').focus());
+}
+
+function render() {
+  const now = Date.now();
+  const kept = readEdit();
+  if (editingId && !tasks.some(t => t.id === editingId && !t.done)) editingId = null;
+
+  const active = tasks.filter(t => !t.done);
+  const done = tasks.filter(t => t.done);
+
+  const list = $('list');
+  list.replaceChildren(...active.map(t => makeRow(t, 'row-template', now)));
+  $('empty').hidden = active.length > 0;
+
+  $('done-group').hidden = done.length === 0;
+  $('done-title').textContent = `Done (${done.length})`;
+  $('done-list').replaceChildren(...done.map(t => makeRow(t, 'done-template', now)));
+
+  $('name').placeholder = Tasks.nextName(tasks);
+
+  if (editingId) {
+    const li = list.querySelector(`[data-id="${CSS.escape(editingId)}"]`);
+    const task = tasks.find(t => t.id === editingId);
+    openEdit(li, task, kept && kept.id === editingId ? kept : null);
+  }
+  renderPrompt();
+}
+
+function renderPrompt() {
+  const hasGoal = tasks.some(t => t.goalMs != null);
+  $('notify-prompt').hidden = !hasGoal || canNotify || promptDismissed;
+}
+
+function tick() {
+  const now = Date.now();
+  for (const li of document.querySelectorAll('.task')) {
+    const task = tasks.find(t => t.id === li.dataset.id);
+    if (task) paintRow(li, task, now);
+  }
+}
+
+// ---- Events ----
+
+function wire() {
+  $('new-task').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('name').value;
+    $('name').value = '';
+    editingId = null;
+    startNew(name).then(() => $('name').focus());
+  });
+
+  function onListClick(e) {
+    const li = e.target.closest('.task');
+    if (!li) return;
+    const id = li.dataset.id;
+    const button = e.target.closest('button');
+    if (button && button.closest('.line')) {
+      for (const name of Object.keys(actions)) {
+        if (button.classList.contains(name)) return actions[name](id);
+      }
+      return;
+    }
+    // A click on the row (not a button, not the edit area) opens or closes the edit area
+    if (e.target.closest('.line') && li.closest('#list')) {
+      editingId = editingId === id ? null : id;
+      render();
+    }
+  }
+  $('list').addEventListener('click', onListClick);
+  $('done-list').addEventListener('click', onListClick);
+
+  $('delete-done').addEventListener('click', e => {
+    e.preventDefault(); // do not open or close the group
+    e.stopPropagation();
+    const count = tasks.filter(t => t.done).length;
+    act(list => Tasks.removeDone(list), `Deleted ${count} done ${count === 1 ? 'task' : 'tasks'}`);
+  });
+
+  $('undo').addEventListener('click', undo);
+
+  $('notify-on').addEventListener('click', () => {
+    // permissions.request must run in the click, before any await
+    Store.askToNotify().then(granted => {
+      canNotify = granted;
+      renderPrompt();
+    });
+  });
+  $('notify-later').addEventListener('click', () => {
+    promptDismissed = true;
+    renderPrompt();
+    Store.dismissPrompt();
+  });
+
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.tasks) {
+      tasks = changes.tasks.newValue || [];
+      render();
+    }
+  });
+  browser.permissions.onAdded.addListener(() => Store.canNotify().then(v => { canNotify = v; renderPrompt(); }));
+  browser.permissions.onRemoved.addListener(() => Store.canNotify().then(v => { canNotify = v; renderPrompt(); }));
+}
+
+async function init() {
+  wire();
+  // On a phone, the keyboard would cover the list, so do not focus there
+  if (!matchMedia('(pointer: coarse)').matches) $('name').focus();
+  [tasks, canNotify, promptDismissed] = await Promise.all([
+    Store.loadTasks(), Store.canNotify(), Store.promptDismissed(),
+  ]);
+  render();
+  setInterval(tick, 1000);
+}
+
+init();

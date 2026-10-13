@@ -173,55 +173,41 @@ def main():
         adb('logcat', '-d', check=False)
         return finish()
 
-    # Firefox shows a "Task Timer was added" sheet; close it.
+    # Firefox shows a "Simple Task Timer was added" sheet; close it.
     time.sleep(8)
     shot('after-install')
     tap(r'^OK$', timeout=5)
 
-    # On install, the add-on's background code opens its "installed" page in a
-    # new tab. Firefox lists that tab on the home screen.
-    record('The add-on opened its "installed" page by itself',
-           tap(r'Thanks for installing Task Timer'))
-    time.sleep(3)
-    shot('installed-page')
-
-    # Open the main page the way a user would: menu, Extensions, Task Timer.
+    # Open the popup the way a user would: menu, Extensions, Simple Task Timer.
     # In the menu, "Extensions" is a collapsed row; tapping it shows the list.
+    # On Android the popup opens as a page.
     opened = (open_menu() and tap(r'mainMenu\.extensions|^Extensions')
-              and (shot('extensions-menu') or True) and tap(r'^Task Timer$'))
+              and (shot('extensions-menu') or True) and tap(r'^Simple Task Timer$'))
     time.sleep(4)
-    shot('after-menu')
-    if not opened:
-        # Backup route: the "installed" page links to the main page.
-        back()
-        opened = tap(r'^Take me to Task Timer$')
-        time.sleep(4)
-    # The add-on opens the page in a new tab; switch to it if Firefox stayed put.
-    if opened and not find(r'Add Task|Task Name|new-txt'):
+    if opened and not find(r'^name$|^start$'):
         tap(r'TabCounterTestTags.tabCounter|ADDRESSBAR_TABS_COUNTER', timeout=5)
         time.sleep(2)
         shot('tabs')
-        opened = tap(r'^(?!Thanks).*(Task Timer|main\.html)', timeout=5)
+        opened = tap(r'Simple Task Timer|popup\.html', timeout=5)
         time.sleep(3)
-    # On narrow screens the add-on asks once whether to use icons instead of
-    # buttons. Answer OK, as a phone user would.
-    if find(r'running Task Timer in a small window'):
-        shot('small-screen-question')
-        tap(r'^OK$', timeout=5)
-        time.sleep(2)
-    shot('main-page')
-    record('Opened the main page from the Firefox menu', opened)
+    shot('popup')
+    record('Opened the popup from the Firefox menu', opened)
 
-    # Add a task that starts right away, so the next screenshot shows the timer.
-    added = tap(r'^new-txt$')
+    # Start a task with no name: one tap on Start gives "Task 1"
+    started = tap(r'^start$')
+    time.sleep(2)
+    shot('task-1-started')
+    record('Start with no name made "Task 1"', started and bool(find(r'^Task 1$')))
+
+    # Start a named task with Enter
+    added = tap(r'^name$')
     if added:
         adb('shell', 'input', 'text', 'Android%stest%stask')
+        adb('shell', 'input', 'keyevent', 'KEYCODE_ENTER')
         back()  # hide the keyboard
-        tap(r'^new-start$', timeout=5)
-        added = tap(r'^new-btn$')
     time.sleep(2)
     shot('task-added')
-    record('Added a task', added and bool(find(r'Android test task')))
+    record('Enter made and started a named task', added and bool(find(r'Android test task')))
     time.sleep(5)
     shot('five-seconds-later')
 

@@ -1,5 +1,5 @@
-# Runs the add-on in headless Firefox and checks that a task with a goal
-# keeps running after the goal and sends one desktop notification.
+# Runs the unit tests, then runs the add-on in headless Firefox: the task
+# buttons, Undo, the goal, the badge and the optional notification.
 name: Goal test
 
 on:
@@ -7,6 +7,7 @@ on:
   push:
     paths:
       - 'src/**'
+      - 'tests/**'
       - 'ci/goal_test.py'
       - '.github/workflows/goal-test.yml'
 
@@ -16,6 +17,13 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Run the unit tests
+        run: node --test
 
       - uses: actions/setup-python@v7
         with:

@@ -24,12 +24,18 @@ npx web-ext build --source-dir src
 
 The package goes to `web-ext-artifacts/`.
 
+The PNG icons come from `src/icons/icon.svg` and `src/icons/icon-16.svg`. To make them again on macOS:
+
+```bash
+sh ci/render_icons.sh
+```
+
 ## Test
 
 Unit tests (Node.js 20 or newer, no packages):
 
 ```bash
-node --test tests/
+node --test
 ```
 
 Browser test in headless Firefox (needs `pip install selenium`):

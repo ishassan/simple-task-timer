@@ -2,7 +2,9 @@
 """Check what happens when a task reaches its goal, in headless Firefox.
 
 A task with a goal must keep running after the goal and send one desktop
-notification. An indefinite task must not send a notification.
+notification. An indefinite task must not send a notification. A click on
+the notification must close the in-page popup and make the timer tab the
+active tab.
 
 Usage:
     pip install selenium
@@ -16,6 +18,8 @@ script (background page) that stores the settings and tasks and opens
 main.html, and a harness script (main.html) that records what happens and
 sends the results by HTTP POST to a local server in this script. WebDriver
 cannot run scripts in moz-extension pages, so the results come back this way.
+To click the notification, the script uses WebDriver in the privileged
+browser context (geckodriver --allow-system-access).
 
 Firefox runs headless with a temporary profile, the sound muted and the
 system notification banners off, so nothing shows on the screen. On macOS
@@ -35,6 +39,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.join(ROOT, 'src')
@@ -113,6 +118,9 @@ HARNESS_JS = '''
             window.js_error = function(e) { errs.push(String(e && e.stack || e)); return js_error_orig.apply(this, arguments); };
         } catch (e) { errs.push('harness: ' + e); }
 
+        function tab_active(cb) { chrome.tabs.getCurrent(function(t) { cb(!!(t && t.active)); }); }
+
+        // Phase 1: the goal task passes its goal
         setTimeout(function() {
             var s1 = snap();
             setTimeout(function() {
@@ -123,23 +131,42 @@ HARNESS_JS = '''
                            popup: $('#alarm-menu').is(':visible'), error_shown: js_error_shown};
                 var st = {noOvertime: $('#no-overtime').length, stopTimer: $('#stop-timer').length,
                           notify: $('#notify').length, popup: $('#show-popup').length, sound: $('#play-sound').length};
-                var errs_before_save = errs.slice();
-                try {
-                    $('#close-alarm').click();
-                    $('#tools-button').click();
-                    $('#save-settings').click();
-                } catch (e) { errs.push('save: ' + e); }
-                setTimeout(function() {
-                    var p = (typeof browser != 'undefined' && browser.notifications) ? browser.notifications.getAll() : Promise.resolve(null);
-                    p.then(function(all) {
-                        post({version: chrome.runtime.getManifest().version, s1: s1, s2: s2, notes: notes,
-                              errs: errs_before_save, save_errs: errs.slice(errs_before_save.length),
-                              save_error_shown: js_error_shown, row: row, st: st,
-                              active_notifications: all ? Object.keys(all) : null});
-                    });
-                }, 1000);
+                var p = (typeof browser != 'undefined' && browser.notifications) ? browser.notifications.getAll() : Promise.resolve(null);
+                p.then(function(all) { tab_active(function(active) {
+                    post({phase: 'goal', version: chrome.runtime.getManifest().version, s1: s1, s2: s2,
+                          notes: notes, errs: errs.slice(), row: row, st: st, tab_active: active,
+                          active_notifications: all ? Object.keys(all) : null});
+                    wait_for_click(Date.now());
+                }); });
             }, 3000);
         }, 8000);
+
+        // Phase 2: the test clicks the notification. Wait for the popup to close
+        // and for this tab to become the active tab.
+        function wait_for_click(start) {
+            tab_active(function(active) {
+                var popup = $('#alarm-menu').is(':visible');
+                if ((active && !popup) || Date.now() - start > 20000) {
+                    post({phase: 'click', tab_active: active, popup: popup});
+                    save_settings();
+                } else {
+                    setTimeout(function() { wait_for_click(start); }, 250);
+                }
+            });
+        }
+
+        // Phase 3: save the settings
+        function save_settings() {
+            var errs_before_save = errs.length;
+            try {
+                $('#close-alarm').click();
+                $('#tools-button').click();
+                $('#save-settings').click();
+            } catch (e) { errs.push('save: ' + e); }
+            setTimeout(function() {
+                post({phase: 'save', save_errs: errs.slice(errs_before_save), save_error_shown: js_error_shown});
+            }, 1000);
+        }
     }, 1000); });
 })();
 '''
@@ -149,7 +176,8 @@ result = {}
 
 class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        result['data'] = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+        data = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+        result[data['phase']] = data
         self.send_response(204)
         self.end_headers()
 
@@ -167,6 +195,28 @@ def front_app():
     out = subprocess.run(['lsappinfo', 'info', '-only', 'name', asn],
                          capture_output=True, text=True).stdout
     return out.split('\n')[0].split('(')[0].strip()  # app name and ASN
+
+
+# Firefox shows its own notification window (windowtype "alert:alert") when
+# the system notifications are off. A click anywhere in it is a click on the
+# notification.
+CLICK_NOTIFICATION_JS = '''
+var win = Services.wm.getMostRecentWindow('alert:alert');
+if (!win) return null;
+var label = win.document.getElementById('alertTextLabel');
+var box = label.getBoundingClientRect();
+label.dispatchEvent(new win.MouseEvent('click', {bubbles: true, view: win, button: 0,
+                                                 clientX: box.left + 2, clientY: box.top + 2}));
+return label.textContent;
+'''
+
+
+def wait_for(phase, seconds):
+    for _ in range(seconds * 4):
+        if phase in result:
+            return result[phase]
+        time.sleep(0.25)
+    return None
 
 
 def build_xpi(port):
@@ -214,20 +264,24 @@ def main():
     opts.set_preference('extensions.webextensions.uuids', json.dumps({ADDON_ID: UUID}))
     opts.set_preference('media.volume_scale', '0.0')        # no sound
     opts.set_preference('alerts.useSystemBackend', False)  # no system notification banners
+    opts.set_preference('alerts.totalOpenTime', 120000)    # keep the notification open
 
     mac = sys.platform == 'darwin'
     apps_before = running_apps() if mac else set()
     fronts = [front_app()] if mac else []
-    driver = webdriver.Firefox(options=opts)
+    # System access lets the test click the notification window
+    driver = webdriver.Firefox(options=opts, service=Service(service_args=['--allow-system-access']))
     try:
         driver.install_addon(build_xpi(port), temporary=True)
         time.sleep(3)
         if mac:
             fronts.append(front_app())
-        for _ in range(60):
-            if 'data' in result:
-                break
-            time.sleep(0.5)
+        clicked = None
+        if wait_for('goal', 30):
+            with driver.context(driver.CONTEXT_CHROME):
+                clicked = driver.execute_script(CLICK_NOTIFICATION_JS)
+            wait_for('click', 30)
+            wait_for('save', 10)
     finally:
         if mac:
             fronts.append(front_app())
@@ -244,9 +298,9 @@ def main():
             line += '  (' + str(detail) + ')'
         results.append(line)
 
-    r = result.get('data')
-    if not r:
-        print('FAIL  no result from the harness')
+    r, c, sv = result.get('goal'), result.get('click'), result.get('save')
+    if not (r and c and sv):
+        print('FAIL  no result from the harness', sorted(result))
         sys.exit(1)
 
     s1, s2, notes, row, st = r['s1'], r['s2'], r['notes'], r['row'], r['st']
@@ -269,10 +323,14 @@ def main():
     check('task at 2h10m with a 1h30m goal is marked done', row['over_done'])
     check('in-page popup still shows', row['popup'])
     check('no script errors', not r['errs'] and not row['error_shown'], r['errs'])
+    check('timer tab is in the background before the click', not r['tab_active'])
+    check('test clicked the goal notification', clicked == 'Task "goal" has reached its goal!', clicked)
+    check('click closes the in-page popup', not c['popup'])
+    check('click makes the timer tab the active tab', c['tab_active'])
     check('settings page has no stop-at-goal or notify options',
           st['noOvertime'] == 0 and st['stopTimer'] == 0 and st['notify'] == 0, st)
     check('popup and sound options are still there', st['popup'] == 1 and st['sound'] == 1, st)
-    check('saving settings gives no error', not r['save_errs'] and not r['save_error_shown'], r['save_errs'])
+    check('saving settings gives no error', not sv['save_errs'] and not sv['save_error_shown'], sv['save_errs'])
     if mac:
         asns = [re.search(r'ASN:0x[0-9a-f]+-0x[0-9a-f]+', f) for f in fronts]
         new_front = [a.group(0) for a in asns if a and a.group(0) not in apps_before]

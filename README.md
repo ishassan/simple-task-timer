@@ -16,7 +16,7 @@ Firefox Add-ons page: https://addons.mozilla.org/en-US/firefox/addon/simple-task
 
 ## Keys
 
-- **Alt+Shift+T** opens the popup. The cursor is in the name field, so Alt+Shift+T then Enter starts a new task. You can change this key in Firefox: Add-ons and themes, gear menu, Manage Extension Shortcuts.
+- **Alt+W** (Option+W on a Mac) opens the popup. The cursor is in the name field, so Alt+W then Enter starts a new task, and Alt+W then Space pauses or resumes the last task. On a Mac, this key then no longer types "∑" in Firefox. You can change this key in Firefox: Add-ons and themes, gear menu, Manage Extension Shortcuts.
 - In the name field: **Enter** starts a new task. **Space** (with the field empty) pauses or resumes the last task. **Down arrow** goes to the list.
 - On a task: **Up** and **Down arrows** move between tasks, **Space** starts or pauses, **Enter** or **E** edits, **R** resets, **D** marks done, **Delete** deletes, **Escape** goes back to the name field.
 - **Ctrl+Z** (Cmd+Z on a Mac) undoes the last reset, done or delete while the Undo bar shows.

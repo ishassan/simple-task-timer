@@ -447,8 +447,8 @@ def main():
             line += '  (' + str(detail) + ')'
         results.append(line)
 
-    check('a shortcut opens the popup (Alt+Shift+T)',
-          manifest.get('commands', {}).get('_execute_action', {}).get('suggested_key', {}).get('default') == 'Alt+Shift+T')
+    check('a shortcut opens the popup (Alt+W)',
+          manifest.get('commands', {}).get('_execute_action', {}).get('suggested_key', {}).get('default') == 'Alt+W')
     check('notifications is only an optional permission',
           'notifications' not in manifest.get('permissions', []) and
           'notifications' in manifest.get('optional_permissions', []))

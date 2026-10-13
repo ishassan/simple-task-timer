@@ -4,3 +4,4 @@ web-ext-artifacts/
 *.log
 *.zip
 __pycache__/
+.amo-upload-uuid

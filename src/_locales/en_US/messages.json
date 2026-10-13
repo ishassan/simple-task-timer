@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Track task history (so you can view statistics for each task)"
 	},
-	"optNoOvertime": {
-		"message": "Don't allow tasks to go over their goals"
-	},
-	"optStopTimer": {
-		"message": "Stop a task when it reaches its goal"
-	},
 	"optOnlyOne": {
 		"message": "Only allow one task to be running at a time"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Show a popup on the page when a task reaches its goal"
-	},
-	"optShowNotification": {
-		"message": "Show a desktop notification when a task reaches its goal"
 	},
 	"optPlaySound": {
 		"message": "Play a sound when a task reaches its goal"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Desktop Notifications Work!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "You seeing this means desktop notifications are enabled and working correctly! Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "It looks like you're using a path to a local file on your machine for the custom sound URL.\nUnfortunately, local files cannot be used, as Chrome does not allow access to your local filesystem, even for a sound.\nOnly internet URLs (beginning with http, https, or ftp) can be used. This means that you need to find a sound online, or upload the sound that you want somewhere."

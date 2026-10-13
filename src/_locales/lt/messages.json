@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Stebėti užduočių istoriją ( Jūsų galėsite matyti kiekvienos užduoties statistiką)"
 	},
-	"optNoOvertime": {
-		"message": "Neleisti užduočių eiti prieš tikslus"
-	},
-	"optStopTimer": {
-		"message": "Sustabdyti užduotį, kai pasiekimas tikslas"
-	},
 	"optOnlyOne": {
 		"message": "Vienu metu leisti tik vieną užduotį"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Rodyti papildomą langą puslapyje, kai užduotis pasiekia savo tikslą"
-	},
-	"optShowNotification": {
-		"message": "Rodyti pranešimą darbalaukyje, kai užduotis pasiekia savo tikslą."
 	},
 	"optPlaySound": {
 		"message": "Groti garsą, kai užduoties pasiekia savo tikslą."
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Darbalaukio pranešimai įjungti!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Kaip matote, tai reiškia, kad darbalaukio pranešimai įjungti ir veikia teisingai! Taip!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Atrodo, kad Jūs naudojate nuorodą į vietinį failą savo kompiuteryje pasirenkant garso URL.\nDeja, vietiniai failai negali būti naudojamas, kaip \"Chrome\" neleidžia prieigos prie Jūsų vietinio failų sistemos, net garso.\nTik interneto URL (pradedant nuo HTTP, HTTPS ir FTP) gali būti naudojama. Tai reiškia, kad Jums reikia rasti garsą internete, arba įkelti garsą, kurio pageidaujate, kitur."

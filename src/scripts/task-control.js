@@ -54,22 +54,13 @@ function update_time() {
                     }
                 }
 
-                // Task meets its goal
-                if(!tasks[i].indefinite && tasks[i].current_hours >= tasks[i].goal_hours && tasks[i].current_mins >= tasks[i].goal_mins) {
+                // Task meets its goal (the task keeps running after this)
+                if(task_reached_goal(i)) {
                     $('tr#task-'+ i).addClass('done');
-
-                    // Disable toggle buttons
-                    if(Setting('no-overtime')) {
-                        $('tr#task-'+ i +' button.toggle').attr('disabled', 'disabled');
-                        $('tr#task-'+ i +' img.toggle').attr('src', 'style/images/control_play.png').addClass('disabled');
-                    }
 
                     // Show notification and play the sound
                     if(!tasks[i].notified) {
                         tasks[i].notified = true;
-
-                        // Stop the timer
-                        if(Setting('no-overtime') || Setting('stop-timer')) toggle_task(i);
 
                         // Play sound
                         if(Setting('play-sound')) $('#sound')[0].play();
@@ -83,18 +74,8 @@ function update_time() {
                             $('#alarm-menu').center();
                         }
 
-                        // Show Desktop Notification
-                        if(Setting('notify') && (Notification.permission === 'granted' || !Notification.permission)) {
-                            var notification = new Notification(locale('noteTaskFinished', tasks[i].text), {
-                                body: locale('noteTaskFinishedLong', tasks[i].text),
-                                icon: '/style/images/icon-64.png'
-                            });
-                            notification.onclick = function() {
-                                $('#close-alarm').click();
-                                window.focus();
-                                this.close();
-                            };
-                        }
+                        // Show desktop notification
+                        goal_notification(i);
                     }
                 }
 
@@ -318,15 +299,8 @@ function list_task(task, anim) {
             edit_goal(parseInt($(this).parent().attr('id').replace('task-', ''), 10));
         });
 
-        // Disable the toggle button if task is at its goal, and change the bg colour
-        if(!tasks[task].indefinite && tasks[task].current_hours >= tasks[task].goal_hours && tasks[task].current_mins >= tasks[task].goal_mins) {
-            if(Setting('no-overtime')) {
-                $('#task-'+ task +' button.toggle').attr('disabled', 'disabled');
-                $('#task-'+ task +' img.toggle').attr('src', 'style/images/control_play.png').addClass('disabled');
-            }
-
-            $('#task-'+ task).addClass('done');
-        }
+        // Change the bg colour if task is at its goal
+        if(task_reached_goal(task)) $('#task-'+ task).addClass('done');
 
         // Update task menu if it's shown for this task
         if(displaying_task == task) task_info(task, false, false, progress);
@@ -377,11 +351,6 @@ function task_info(task, user_triggered, anim, progress) {
         $('button#save-description, button#task-toggle, button#task-reset, button#task-delete, button#task-clear-history').attr('name', task);
         if(tasks[task].last_tick) $('button#task-toggle').text(locale('btnStop')); else $('button#task-toggle').text(locale('btnStart'));
         if($('tr#task-'+ task +' button.toggle').attr('disabled')) $('#task-toggle').attr('disabled', 'disabled'); else $('#task-toggle').removeAttr('disabled');
-
-        // Disable the toggle button if task is at its goal, and change the bg colour
-        if(!tasks[task].indefinite && tasks[task].current_hours >= tasks[task].goal_hours && tasks[task].current_mins >= tasks[task].goal_mins && Setting('no-overtime')) {
-            $('#task-toggle').attr('disabled', 'disabled');
-        }
 
         // Load settings
         LoadTaskSettings();
@@ -471,4 +440,43 @@ function task_progress(task) {
     if(tasks[task].indefinite) progress = 0;
     if(progress == Infinity) progress = 100;
     return progress;
+}
+
+// Return true if a task with a goal has reached that goal
+function task_reached_goal(task) {
+    if(tasks[task].indefinite) return false;
+    return tasks[task].current_hours * 60 + tasks[task].current_mins >= tasks[task].goal_hours * 60 + tasks[task].goal_mins;
+}
+
+// Show a desktop notification that a task has reached its goal
+function goal_notification(task) {
+    var title = locale('noteTaskFinished', tasks[task].text);
+    var body = locale('noteTaskFinishedLong', tasks[task].text);
+
+    if(typeof chrome.notifications != 'undefined') {
+        chrome.notifications.create('goal-'+ Date.now(), {
+            type: 'basic',
+            title: title,
+            message: body,
+            iconUrl: chrome.runtime.getURL('style/images/icon-64.png')
+        });
+    } else if(typeof Notification != 'undefined') {
+        // Use the web Notification API if the notifications API is not available
+        Notification.requestPermission(function(permission) {
+            if(permission === 'granted') new Notification(title, {body: body, icon: '/style/images/icon-64.png'});
+        });
+    }
+}
+
+// The user clicked a goal notification: close the popup and show this tab
+if(typeof chrome.notifications != 'undefined') {
+    chrome.notifications.onClicked.addListener(function(id) {
+        if(id.indexOf('goal-') !== 0) return;
+        chrome.notifications.clear(id);
+        if(alarm_open) $('#close-alarm').click();
+        chrome.tabs.getCurrent(function(tab) {
+            chrome.tabs.update(tab.id, {active: true});
+            chrome.windows.update(tab.windowId, {focused: true});
+        });
+    });
 }

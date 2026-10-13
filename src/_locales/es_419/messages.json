@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Monitorear historial de tareas (para que puedas ver las estadísticas de cada tarea)"
 	},
-	"optNoOvertime": {
-		"message": "No permitir que las tareas vayan mas allá de sus objetivos."
-	},
-	"optStopTimer": {
-		"message": "Detener una tarea cuando alcance su objetivo"
-	},
 	"optOnlyOne": {
 		"message": "Permitir que solo una tarea este activa a la vez."
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Mostrar una ventana emergente en la página cuando una tarea alcance su meta"
-	},
-	"optShowNotification": {
-		"message": "Mostrar una notificación en el escritorio cuando una tarea alcance su meta"
 	},
 	"optPlaySound": {
 		"message": "Tocar un sonido cuando una tarea alcance su meta"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "¡Las notificaciones de escritorio funcionan!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Si ves este mensaje, quiere decir que las notificaciones de escritorio están habilitadas y funcionando correctamente. Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Parece que estás utilizando una ruta local en tu máquina para la URL del sonido personalizado.\nDesafortunadamente, los archivos locales no pueden ser utilizados, ya que Chrome no permite el acceso a tu sistema de archivos locales, incluso para un sonido.\nSólo las direcciones de internet (que empiecen por http, https, o ftp) pueden ser utilizadas. Eso significa que necesitas encontrar un sonido en línea, o subir el sonido que quieres a algún lugar."

@@ -236,12 +236,6 @@
 	"optTrackHistory": {
 		"message": "Göre Geçmişi (Her görev için istatislik görebilirsiniz.)"
 	},
-	"optNoOvertime": {
-		"message": "görev hedef zamana ulaştığında durdurma"
-	},
-	"optStopTimer": {
-		"message": "görev hedef zaman ulaştığında durdur"
-	},
 	"optOnlyOne": {
 		"message": "Sadece bir görevin çalışmasına izin ver."
 	},
@@ -250,9 +244,6 @@
 	},
 	"optShowPopup": {
 		"message": "Bir görev hedefine ulaştığında sayfada bir popup Göster"
-	},
-	"optShowNotification": {
-		"message": "Bir görev hedefine ulaştığında bir masaüstü bildirim göster"
 	},
 	"optPlaySound": {
 		"message": "Bir görev hedefine ulaştığında bir ses çal"
@@ -391,12 +382,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Masaüstü notları Çalışıyor !"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Bu araç masaüstü bildirimleri etkin görme ve doğru çalışıyor! Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Eğer özel ses URL için makinenizde bir yerel dosya yolunu kullanarak konum gibi görünüyor.\nCrom hatta bir ses için, yerel dosya sistemine erişime izin vermiyor gibi ne yazık ki, yerel dosyalar, kullanılamaz.\nSadece internet URL'ler (http, https veya ftp ile başlayan) kullanılabilir. Bu bir ses çevrimiçi bulmak, ya da bir yere istediğiniz ses yüklemek gerekiyor demektir."

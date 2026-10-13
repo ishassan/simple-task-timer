@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Jelajah sejarah pekerjaan (sehingga anda bisa melihat statistik masing-masing tugas)"
 	},
-	"optNoOvertime": {
-		"message": "Jangan izinkan tugas melebihi targetnya"
-	},
-	"optStopTimer": {
-		"message": "Hentikan tugas ketika sudah mencapai target"
-	},
 	"optOnlyOne": {
 		"message": "Hany perbolehkan satu tugas dalam satu waktu"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Munculkan popup di halaman ketika tugas mencapai target"
-	},
-	"optShowNotification": {
-		"message": "Munculkan notifikasi desktop ketika tugas mencapai target"
 	},
 	"optPlaySound": {
 		"message": "Mainkan bunyi ketika tugas mencapai target"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Notifikasi Desktop Sudah Bekerja!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Ketika anda melihat ini, artinya notifikasi desktop sudah diaktifkan dan bekerja dengan baik! Asyik!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Nampaknya anda menggunakan suara yang ada di komputer anda.\nSayangnya, file ini tidak bisa digunakan karena Chrome tidak mengizinkan untuk mengaksesnya. Hanya URL internet (diawali dengan http, https, atau ftp) yang bisa digunakan. Anda perlu mencari atau juga meng-upload file suara online"

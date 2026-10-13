@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Sledovať históriu úloh (potom je možné pozerať štatistiky pre každú úlohu)"
 	},
-	"optNoOvertime": {
-		"message": "Nepovoliť úlohám prejsť za ich cieľový čas."
-	},
-	"optStopTimer": {
-		"message": "Zastaviť úlohu keď dosiahne cieľový čas."
-	},
 	"optOnlyOne": {
 		"message": "Povoliť naraz iba jednu prebiehajúcu úlohu"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Zobraziť vyskakovacie okno, keď úloha dosiahne cieľ"
-	},
-	"optShowNotification": {
-		"message": "Zobraziť upozornenie na ploche, keď úloha dosiahne cieľ"
 	},
 	"optPlaySound": {
 		"message": "Prehrať zvuk keď úloha dosiahne cieľ"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Notifikácie na ploche fungujú!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Vidíte, toto znamená, že upozornennia na pracovnej ploche sú zapnuté a pracujú správne! Fúú!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Zdá sa že používate cestu k lokálnemu súboru na vašom PC pre užívateľský zvuk URL.\nNaneštastie, lokálne súbory nemožu byť použité, pretože prehliadač Chrome nepovoľuje prístup k vášmu súborovému systému, a to ani pre zvuk. Jedine internetové adresy URL (začínajúce http, https alebo ftp) možu byť použité. To znamená, že musíte nájsť nejaký zvuk online na internete, alebo nahrať zvuk na nejakú webovú stránku\/server."

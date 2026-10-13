@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Oglądaj historię twoich zadań (możesz oglądać wykresy dla każdego zadania)"
 	},
-	"optNoOvertime": {
-		"message": "Nie pozwól, by zadania przekraczały swoje cele"
-	},
-	"optStopTimer": {
-		"message": "Zatrzymaj zadanie, gdy osiągnie swój cel"
-	},
 	"optOnlyOne": {
 		"message": "Pozwól, by tylko jedno zadania mogło być wykonywane w danej chwili"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Pokaż wyskakujące okno na stronie, gdy zadanie osiągnie swój cel"
-	},
-	"optShowNotification": {
-		"message": "Pokaż powiadomienie na pulpicie kiedy zadanie osiągnie cel"
 	},
 	"optPlaySound": {
 		"message": "Daj sygnał, gdy cel zostaje osiągnięty"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Powiadomienia pulpitu działają!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Jeśli to widzisz, to znaczy, że powiadomienia pulpitu są włączone i działają poprawnie! Juhuu!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Wygląda na to, że wskazałeś ścieżkę do lokalnego pliku na Twoim komputerze.\nNiestety, nie możesz użyć lokalnego pliku, gdyż Chrome nie zezwala na dostęp do Twojego systemu plików.\nMusisz użyć internetowego adresu URL (zaczynającego się od http, https albo ftp)."

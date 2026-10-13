@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Spor opgave historie (så du kan se statistikker for hver opgave)"
 	},
-	"optNoOvertime": {
-		"message": "Tillad ikke opgaver at gå over deres målsatte tid."
-	},
-	"optStopTimer": {
-		"message": "Afslut en opgave når den når dens mål."
-	},
 	"optOnlyOne": {
 		"message": "Tillad kun at have 1 opgave aktiv ad gangen"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Vis en pop-up på siden når en opgave når dens mål"
-	},
-	"optShowNotification": {
-		"message": "Vis en skrivebord notifikation når en opgave når dens mål"
 	},
 	"optPlaySound": {
 		"message": "Afspil en lyd når en opgave når dens mål"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Skrivebords Notifikationer Virker!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "At du ser dette, betyder det, at skrivebords notifikationer er aktive og virker korrekt! Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Det ser ud til at du bruger en sti til en lokal fil på  din maskine for selv valgte lyd URL.\nDesværre, kan man ikke bruge filer på sin lokale pc, da crome ikke giver adgang til de lokale filer på computeren. \nKun internet URLs (begynder med http https eller ftp ) kan bruges, Dette betyder at du blivr nød til at finde lyden du vil bruge online eller uploade den til et sted på nettet."

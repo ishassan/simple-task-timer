@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "記錄任務的歷史記錄（這樣您就可以查看每個任務的數據）"
 	},
-	"optNoOvertime": {
-		"message": "不要在一個任務上花費超過預設的時間"
-	},
-	"optStopTimer": {
-		"message": "在完成任務後就停止任務"
-	},
 	"optOnlyOne": {
 		"message": "同時只允許一個任務在運行"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "當一個任務達到預設時間時，在頁面上彈出提醒"
-	},
-	"optShowNotification": {
-		"message": "當一個任務達到預設時間時，彈出桌面提醒"
 	},
 	"optPlaySound": {
 		"message": "當一個任務達到預設時間時，發出音效。"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "桌面通知已可使用!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "當您看到這個訊息，代表桌面通知功能已經啟用而且運作良好! 耶!"
 	},
 	"noteNoLocalFiles": {
 		"message": "似乎你自定義的聲音URL使用的路徑是在你機器上的本地文件。\n不幸的是本地文件不能使用，Chrome並不允許存取本地文件系統，即使是聲音。\n只有網際網路的網址可以使用（HTTP，HTTPS或FTP）。這表示你需要在網路上找聲音，或上傳你想要的聲音到網路上。"

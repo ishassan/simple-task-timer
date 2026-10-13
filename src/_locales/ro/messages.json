@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Urmăreşte istoria sarcinilor de lucru (pentru a putea vedea statistici pentru fiecare sarcină de lucru)"
 	},
-	"optNoOvertime": {
-		"message": "Nu permite sarcinilor de lucru să ruleze dincolo de ţintele lor"
-	},
-	"optStopTimer": {
-		"message": "Opreşte o sarcină de lucru atunci când şi-a atins ţinta"
-	},
 	"optOnlyOne": {
 		"message": "Nu permite să ruleze mai multe sarcini de lucru în acelaşi timp"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Arată o căsuţă de tip pop-up atunci când sarcina de lucru şi-a atins ţinta"
-	},
-	"optShowNotification": {
-		"message": "Arată o notificare pe desktop atunci când sarcina de lucru şi-a atins ţinta"
 	},
 	"optPlaySound": {
 		"message": "Rulează un sunet atunci când sarcina de lucru şi-a atins ţinta"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Notificările pe desktop merg!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Dacă vezi asta, înseamnă că notificările pe desktop sunt activate şi funcţionează corect!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Se pare că foloseşti o cale spre un fişier local de pe calculatorul tău pentru URL-ul sunetului particularizat.\nDin păcate, fişierele locale nu pot fi folosite, deoarece Chrome nu permite accesul la sistemul tău local de fişiere, nici măcar pentru un sunet. Doar URL-uri de internet (care încep cu http, https sau ftp) pot fi folosite. Aceasta înseamnă că va trebui să cauţi un sunet online sau să uploadezi undeva sunetul pe care îl doreşti."

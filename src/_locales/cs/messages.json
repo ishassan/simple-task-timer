@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Sledovat historii úkolů (takže můžete zobrazit statistiku pro každý úkol)"
 	},
-	"optNoOvertime": {
-		"message": "Nedovolit úkolům překračovat své cíle"
-	},
-	"optStopTimer": {
-		"message": "Ukončit úkol, dosáhne-li svého cíle"
-	},
 	"optOnlyOne": {
 		"message": "Zakázat, aby v jednom okamžiku probíhal více než jeden úkol"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Zobrazit vyskakovací oknona stránce, když úkol dosáhne svého cíle"
-	},
-	"optShowNotification": {
-		"message": "Zobrazit oznámení na ploše, dosáhne-li úkol svého cíle"
 	},
 	"optPlaySound": {
 		"message": "Přehrát zvuk, když úkol dosáhne svého cíle"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Oznámení na ploše fungují!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Jestli tohle vidíte, znamená to že oznámení na ploše jsou povolená a pracují správně! Hurá!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Vypadá to, že jako URL vlastního zvuku používáte cestu k lokálnímu souboru na Vašem počítači.\nLokální soubory bohužel nelze použít, protože Chrome neumožňuje přístup k Vašemu souborovému systému, a to ani pro zvuk.\nLze použít pouze internetové URL (začínající http, https a ftp). To znamená, že budete muset najít zvuk on-line, případně takový, který chcete použít, nahrát někam na web."

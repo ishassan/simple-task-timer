@@ -319,14 +319,6 @@
 		"message": "Track task history (so you can view statistics for each task)",
 		"description": "Setting - Track task history"
 	},
-	"optNoOvertime": {
-		"message": "Don't allow tasks to go over their goals",
-		"description": "Setting - Don't allow going over goals"
-	},
-	"optStopTimer": {
-		"message": "Stop a task when it reaches its goal",
-		"description": "Setting - Stop at goal"
-	},
 	"optOnlyOne": {
 		"message": "Only allow one task to be running at a time",
 		"description": "Setting - Only allow one task to be running"
@@ -342,10 +334,6 @@
 	"optShowPopup": {
 		"message": "Show a popup on the page when a task reaches its goal",
 		"description": "Setting - Show popup"
-	},
-	"optShowNotification": {
-		"message": "Show a desktop notification when a task reaches its goal",
-		"description": "Setting - Show desktop notification"
 	},
 	"optPlaySound": {
 		"message": "Play a sound when a task reaches its goal",
@@ -536,14 +524,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Desktop Notifications Work!",
-		"description": "Desktop notifications work"
-	},
-	"noteNotifsWorkBody": {
-		"message": "You seeing this means desktop notifications are enabled and working correctly! Woo!",
-		"description": "Desktop notifications are enabled and working correctly"
 	},
 	"noteNoLocalFiles": {
 		"message": "It looks like you're using a path to a local file on your machine for the custom sound URL.\nUnfortunately, local files cannot be used, as Chrome does not allow access to your local filesystem, even for a sound.\nOnly internet URLs (beginning with http, https, or ftp) can be used. This means that you need to find a sound online, or upload the sound that you want somewhere.",

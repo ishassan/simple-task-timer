@@ -236,12 +236,6 @@
 	"optTrackHistory": {
 		"message": "Segueix la història de les tasques (per tal que puguis veure estadístiques de cada tasca)"
 	},
-	"optNoOvertime": {
-		"message": "No deixis que les tasques sobrepassin els seus objectius"
-	},
-	"optStopTimer": {
-		"message": "Atura una tasca quan abasti el seu objectiu"
-	},
 	"optOnlyOne": {
 		"message": "Permet que només estigui activa una tasca alhora"
 	},
@@ -250,9 +244,6 @@
 	},
 	"optShowPopup": {
 		"message": "Mostra una finestra emergent en la pàgina quan una tasca abasti el seu objectiu"
-	},
-	"optShowNotification": {
-		"message": "Mostra una notificació a l'escriptori quan una tasca abasti el seu objectiu"
 	},
 	"optPlaySound": {
 		"message": "Reprodueix un só quan una tasca assoleixi el seu objectiu"
@@ -391,12 +382,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Les notificacions de l'escriptori funcionen!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Si veus això vol dir que les notificacions de l'escriptori estan habilitades i funcionen correctament! Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Sembla que estàs utilitzant una ruta d'accés a un arxiu local del teu ordinador com a URL de so personalitzat.\nMalauradament, els arxius locals no es poden utilitzar, de la mateixa manera que Chrome no permet l'accés al sistema de fitxers local, fins i tot per a un so.\nNomés els URLs d'internet (que comencin amb htp, https, o ftp) es poden utilitzar. Això significa que has de trobar un so a internet, o penjar el so que vulguis a algún lloc."

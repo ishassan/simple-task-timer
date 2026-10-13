@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "spåra uppgiftshistorik (så att du kan se statistik för varje uppgift.)"
 	},
-	"optNoOvertime": {
-		"message": "Tillåt inte att uppgifterna tar längre tid än satta mål."
-	},
-	"optStopTimer": {
-		"message": "Avbryt en uppgift när den når sitt mål."
-	},
 	"optOnlyOne": {
 		"message": "Tillåt bara en aktiv uppgift åt gången."
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "visa en popup-ruta på sidan när uppgiften når sitt mål."
-	},
-	"optShowNotification": {
-		"message": "Visa på skrivbordet när en uppgift når sitt mål."
 	},
 	"optPlaySound": {
 		"message": "Spela ett ljud när en uppgift når sitt mål"
@@ -406,12 +397,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Skrivbordsaviseringar fungerar!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Detta betyder det skrivbordsaviseringar är aktiverade och fungerar! Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Det ser ut som du använder en sökväg till en lokal fil på din dator för den anpassade ljud-URLen.\nTyvärr kan lokala filer inte användas, eftersom Chrome inte tillåter åtkomst till din lokala filsystem, ens för ett ljud.\nEndast Internetwebbadresser (som börjar med http, https eller ftp) kan användas. Det betyder att du måste hitta ett klipp online eller ladda upp ljudet som du vill använda någonstans."

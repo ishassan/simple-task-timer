@@ -236,12 +236,6 @@
 	"optTrackHistory": {
 		"message": "Aufgabenverlauf aufzeichnen (um Statistiken für jede Aufgabe einsehen zu können)"
 	},
-	"optNoOvertime": {
-		"message": "Aufgaben nicht über ihr Ziel hinaus laufen lassen"
-	},
-	"optStopTimer": {
-		"message": "Aufgabe stoppen, wenn sie ihr Ziel erreicht hat"
-	},
 	"optOnlyOne": {
 		"message": "Jeweils nur eine laufende Aufgabe zulassen"
 	},
@@ -250,9 +244,6 @@
 	},
 	"optShowPopup": {
 		"message": "Dialogfenster einblenden, wenn eine Aufgabe beendet wurde"
-	},
-	"optShowNotification": {
-		"message": "Desktop-Benachrichtigung anzeigen, wenn eine Aufgabe beendet wurde"
 	},
 	"optPlaySound": {
 		"message": "Ton abspielen, wenn eine Aufgabe beendet wurde"
@@ -403,12 +394,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Desktop-Benachrichtigungen funktionieren!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Wenn Sie das sehen, sind Desktop-Benachrichtigungen aktiviert und funktionieren. Super!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Augenscheinlich haben Sie für den individuellen Ton einen Pfad zu einer lokalen Datei auf Ihrem Computer angegeben.\nLokale Dateien können leider nicht genutzt werden, da Chrome keinen Zugriff auf ihr lokales Dateisystem zulässt, nicht einmal für einen Klang.\nEs können nur URLs aus dem Internet (http, https oder ftp) benutzt werden. Das bedeutet, dass Sie online nach einem Klang suchen oder selbst einen Klang auf einen Online Speicher hochladen müssen."

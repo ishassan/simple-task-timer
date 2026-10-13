@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Tieni traccia della cronologie dell'attività (così potrai vedere le statistiche di ogni attività)"
 	},
-	"optNoOvertime": {
-		"message": "Non permettere alle attività di superare l'obbiettivo"
-	},
-	"optStopTimer": {
-		"message": "Ferma un'attività quando raggiunge l'obbiettivo"
-	},
 	"optOnlyOne": {
 		"message": "Consenti l'esecuzione di una sola attività alla volta"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Mostra un popup nella pagina quando un'attività raggiunge il suo obbiettivo"
-	},
-	"optShowNotification": {
-		"message": "Mostra una notifica sul desktop quando un'attività raggiunge il suo obbiettivo"
 	},
 	"optPlaySound": {
 		"message": "Riproduci un suono quando un'attività raggiunge il suo obbiettivo"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Le notifiche sul desktop funzionano!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Se vedi questo, significa che le notifiche sul desktop sono attive e perfettamente funzionanti! Urrà!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Sembra tu stia usando un collegamento a un percorso locale come indirizzo del suono personale.\nSfortunatamente, i file locali non possono essere usati perché Chrome non permette l'accesso ai dati salvati sul PC, perfino per un suono!\nSolo i collegamenti a internet (che iniziano con http, https o ftp) possono essere usati. Questo significa che devi trovare un suono online, o caricare da qualche parte il suono che desideri."

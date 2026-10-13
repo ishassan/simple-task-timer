@@ -233,12 +233,6 @@
 	"optTrackHistory": {
 		"message": "Praćenje povijesti zadatka (kako biste imali uvid u statistiku za svaki pojedini zadatak)"
 	},
-	"optNoOvertime": {
-		"message": "Onemogući aktivnostima da prekorače zadane ciljeve."
-	},
-	"optStopTimer": {
-		"message": "Zaustavi aktivnost kada dođe do cilja"
-	},
 	"optOnlyOne": {
 		"message": "Omogući da bude pokrenuta samo jedna aktivnost"
 	},
@@ -247,9 +241,6 @@
 	},
 	"optShowPopup": {
 		"message": "Prikaži na stranici iskočni prozor kada je aktivnost došla do cilja."
-	},
-	"optShowNotification": {
-		"message": "Prikaži obavijest na radnoj površini kada aktivnost stigne do cilja"
 	},
 	"optPlaySound": {
 		"message": "Pokreni zvuk kada je aktivnost došla do cilja"
@@ -379,12 +370,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Desktop Obavijesti Rade!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Ako vidite ovo, znači da su desktop obavijesti omogućene i da rade ispravno! Woo!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Čini se kako koristite put do lokalnih datoteka na vašem računalu za URL vlastitog zvuka.\nNažalost, lokalne datoteke se ne mogu koristiti jer Chrome ne dozvoljava pristup vašem lokalnom sustavu datoteka, čak niti za zvuk.\nSamo se internetski URL-ovi (koji počinju s http, https ili ftp) mogu koristiti. To znači kako morate naći zvuk online, ili učitati negdje zvuk koji želite."

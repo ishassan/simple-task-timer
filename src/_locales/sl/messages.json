@@ -233,12 +233,6 @@
 	"optTrackHistory": {
 		"message": "Beleži zgodovino opravil (tako lahko spremljate statistiko za vsako opravilo)"
 	},
-	"optNoOvertime": {
-		"message": "Ne dovoli da opravila presežejo predviden čas"
-	},
-	"optStopTimer": {
-		"message": "Ustavi opravilo, ko je dosežen časovni cilj."
-	},
 	"optOnlyOne": {
 		"message": "Dovoli da hkrati poteka le eno opravilo."
 	},
@@ -247,9 +241,6 @@
 	},
 	"optShowPopup": {
 		"message": "Pokaži pojavno okno na strani aplikacije, ko opravilo doseže časovni cilj."
-	},
-	"optShowNotification": {
-		"message": "Prikaži opozorilo na namizju ko opravilo doseže časovni cilj"
 	},
 	"optPlaySound": {
 		"message": "Predvajaj zvočno opozorilo, ko opravilo doseže časovni cilj."
@@ -379,12 +370,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Opomnik na namizju deluje!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Če vidite to sporočilo je vaš opomnik na namizju vklopljen in delujoč! Juhu!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Izgleda, da za zvočno opozorilo po meri neuspešno uporabljate pot do datoteke shranjene na vašem računalniku. Na žalost se na računalniku shranjenih datotek ne da uporabiti, saj brskalnik Chrome ne dovoljuje dostopa do lokalnega datotečnega sistema, niti za zvočne datoteke. Uporabi se lahko le URL bližnjice (ki se začno z http, https, ali ftp). To pomeni, da mora zvočna datoteka prihajati iz spleta, oziroma, da jo morate predhodno naložiti na spletno mesto."

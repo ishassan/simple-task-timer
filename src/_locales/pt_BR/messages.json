@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Rastrear histórico de tarefas (você poderá visualizar as estatísticas de cada tarefa)"
 	},
-	"optNoOvertime": {
-		"message": "Não permitir que tarefas ultrapassem seus objetivos"
-	},
-	"optStopTimer": {
-		"message": "Parar uma tarefa quando ela alcançar seu objetivo"
-	},
 	"optOnlyOne": {
 		"message": "Permitir apenas uma tarefa sendo executada ao mesmo tempo"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Mostrar um aviso na página quando uma tarefa alcançar seu objetivo"
-	},
-	"optShowNotification": {
-		"message": "Mostrar uma notificação na área de trabalho quando uma tarefa alcançar seu objetivo"
 	},
 	"optPlaySound": {
 		"message": "Tocar um som quando a tarefa alcançar seu objetivo"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Notificações da Área de Trabalho Funcionam!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Se você está vendo isso, significa que as notificações de desktop estão habilitadas e funcionando corretamente! Uhu!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Parece que você está usando um caminho para um arquivo local em sua máquina para a URL de som customizada.\nInfelizmente, arquivos locais não podem ser utilizados, pois o Chrome não permite acesso aos arquivos do seu sistema, inclusive sons.\nSomente endereços de internet (começando com http, https, ou ftp) podem ser utilizados. Isto significa que você precisa encontrar um som online, ou enviar um som que você queira usar para algum lugar."

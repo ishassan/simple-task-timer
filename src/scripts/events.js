@@ -351,15 +351,6 @@ $(function() {
         rebuild_list();
     });
 
-    // User toggled the no overtime checkbox
-    $('#no-overtime').change(function() {
-        if($('#no-overtime').is(':checked')) {
-            $('#stop-timer').attr('disabled', 'disabled');
-        } else {
-            $('#stop-timer').removeAttr('disabled');
-        }
-    });
-
     // User toggled the play sound checkbox
     $('#play-sound').change(function() {
         if($('#play-sound').is(':checked')) {

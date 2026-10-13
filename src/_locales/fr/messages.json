@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Garder un historique de la tâche (afin de pouvoir consulter les statistiques pour chaque tâche)"
 	},
-	"optNoOvertime": {
-		"message": "Ne pas permettre aux tâches d'aller au-delà de l'objectif"
-	},
-	"optStopTimer": {
-		"message": "Arrêter la tâche quand elle a atteint son objectif"
-	},
 	"optOnlyOne": {
 		"message": "Ne permettre qu'à une seule tâche de tourner en même temps"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Afficher un pop-up sur la page quand une tâche a atteint son objectif"
-	},
-	"optShowNotification": {
-		"message": "Afficher une notification de bureau quand une tâche a atteint son objectif"
 	},
 	"optPlaySound": {
 		"message": "Produire une alerte sonore quand une tâche a atteint son objectif"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Notifications de Bureau activées!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Si vous voyez ceci, cela veut dire que les notifications de bureau sont activées et fonctionnent correctement! Waouh!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Il semble que vous vous servez d'un chemin vers un fichier local sur votre machine pour le lien sonore personnalisé.\nMalheureusement, les fichiers locaux ne peuvent pas être utilisés, car Chrome ne permet pas l'accès à votre système de fichiers local, même pour un son.\nSeul un lien Internet (en commençant par http, https ou ftp) peut être utilisé. Cela signifie que vous avez besoin de trouver un son en ligne, ou mettre en ligne quelque part le son que vous voulez."

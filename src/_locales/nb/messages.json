@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Følg oppgavehistorikk (så du kan se statistikk for hver oppgave)"
 	},
-	"optNoOvertime": {
-		"message": "Ikke tillat oppgaver å gå over tiden"
-	},
-	"optStopTimer": {
-		"message": "Stopp oppgaven når den har nådd sitt mål"
-	},
 	"optOnlyOne": {
 		"message": "Tillat kun én oppgave å kjøre av gangen"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Vis en popup på siden når en oppgave har nådd sitt mål"
-	},
-	"optShowNotification": {
-		"message": "Vis varsel på skrivebordet når en oppgave har nådd sitt mål"
 	},
 	"optPlaySound": {
 		"message": "Spill av en lyd når en oppgave har nådd sitt mål"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Skrivebordsvarsler fungerer!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Om du ser denne meldingen betyr det at skrivebordsvarslingen er skrudd på og virker som det skal! Woho!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Det ser ut som om du bruker en sti til en lokal fil på maskinen din som URL for brukervalgt lyd. Dessverre kan ikke lokale filer brukes, da Chrome ikke gir tilgang til ditt lokale filsystem, ikke en gang for en lyd. Kun internettnettadresser (som begynner med http, https, eller FTP) kan brukes. Dette betyr at du må finne en lyd på nettet, eller laste opp den lyden du vil ha et eller annet sted."

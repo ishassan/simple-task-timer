@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "追踪任务历史（选择此项可使你看到每个任务的统计数据）"
 	},
-	"optNoOvertime": {
-		"message": "不允许任务超过目标完成时间"
-	},
-	"optStopTimer": {
-		"message": "当任务到达目标完成时间时停止任务"
-	},
 	"optOnlyOne": {
 		"message": "只允许同时进行一个任务"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "当一项任务到达完成时间时在页面上显示弹出窗口"
-	},
-	"optShowNotification": {
-		"message": "当一项任务到达完成时间时在桌面上显示提示窗口"
 	},
 	"optPlaySound": {
 		"message": "当一项任务到达完成时间时播放声音"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "桌面提示可以使用了！"
-	},
-	"noteNotifsWorkBody": {
-		"message": "你看到这个提示说明桌面提示打开并且正常运行了！耶！"
 	},
 	"noteNoLocalFiles": {
 		"message": "你好像在使用电脑上的一个声音文件作为自定义声音的网址。\n不幸的是，本地文件是不能使用的，因为Chrome浏览器不允许软件使用你本地的文件系统，即时是一个声音文件也不可以。\n只有网址（用http，https，或者ftp开头的）才能使用。这意味着你需要找一个网上的声音文件，或上传你的声音文件到网上。"

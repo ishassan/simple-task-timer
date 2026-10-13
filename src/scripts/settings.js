@@ -11,13 +11,10 @@ var settings_checkboxes = {
 
     'enable-sync': false,
     'track-history': true,
-    'stop-timer': true,
-    'no-overtime': true,
     'only-one': false,
     'background-running': true,
 
     'show-popup': true,
-    'notify': false,
     'play-sound': true,
     'loop-sound': false,
 
@@ -73,13 +70,6 @@ function LoadSettings(reset_timer, from_save) {
     } else {
         $('#history-disabled').show();
         $('#history-group').hide();
-    }
-
-    // Enable/disable stop timer checkbox
-    if(Setting('no-overtime')) {
-        $('#stop-timer').attr('disabled', 'disabled');
-    } else {
-        $('#stop-timer').removeAttr('disabled');
     }
 
     // Do stuff for the notification sound
@@ -154,16 +144,6 @@ function SaveSettings() {
     }
     if(parseInt($('#chart-update-time').val(), 10) > 0 && parseInt($('#chart-update-time').val(), 10) <= 60) {
         Setting('chart-update-time', parseInt($('#chart-update-time').val(), 10));
-    }
-
-    // Check for notification permissions
-    if(Setting('notify')) {
-        Notification.requestPermission(function(permission) {
-            if(permission === 'granted') new Notification(locale('noteNotifsWork'), {
-                body: locale('noteNotifsWorkBody'),
-                icon: '/style/images/icon-64.png'
-            });
-        });
     }
 
     // Reset the small window alerted state

@@ -236,12 +236,6 @@
 	"optTrackHistory": {
 		"message": "Track ülesanne ajalugu (nii saate vaadata statistikat iga ülesanne)"
 	},
-	"optNoOvertime": {
-		"message": "Ärge laske ülesandeid minna üle nende eesmärkide"
-	},
-	"optStopTimer": {
-		"message": "Lõpetage ülesanne, kui ta jõuab oma eesmärgini"
-	},
 	"optOnlyOne": {
 		"message": "Luba ainult üks ülesanne olema töökorras korraga"
 	},
@@ -250,9 +244,6 @@
 	},
 	"optShowPopup": {
 		"message": "Näita hüpikaken lehel kui ülesanne jõuab oma eesmärgini"
-	},
-	"optShowNotification": {
-		"message": "Kuva töölaua teade, kui ülesanne jõuab oma eesmärgini"
 	},
 	"optPlaySound": {
 		"message": "Mängi heli, kui ülesanne jõuab oma eesmärgini"
@@ -391,12 +382,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Töölauateavitused töö!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Sa nägemine tähendab see töölauamärguanded on lubatud ja töötab korralikult! Vau!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Tundub te kasutate tee kohalik fail oma masina kohandatud heli URL. \nKahjuks kohalikke faile ei saa kasutada, kui Chrome ei võimalda juurdepääsu oma kohaliku failisüsteemi, isegi heli. \nAinult internet URL ( alguses seisab http, https, või FTP) saab kasutada. See tähendab, et sa pead leidma usaldusväärse internetis või laadige heli, mida soovite kusagil."

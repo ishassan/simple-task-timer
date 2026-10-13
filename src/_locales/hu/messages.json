@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Kövesd a feladat előzményeket (így statisztikákat láthatsz a feladatokhoz)"
 	},
-	"optNoOvertime": {
-		"message": "Ne engedd, hogy a feladatok tovább tartsanak a meghatározott időnél"
-	},
-	"optStopTimer": {
-		"message": "Állítsa meg a feladatot amikor elérte a kitűzött célt"
-	},
 	"optOnlyOne": {
 		"message": "Csak egy feladatot engedélyezz egy időben"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "A feladat befejezésekor felugró ablakban jelenítse azt meg."
-	},
-	"optShowNotification": {
-		"message": "Jelenjen meg egy figyelmeztető ablak, ha a feladat ideje lejárt"
 	},
 	"optPlaySound": {
 		"message": "Hang lejátszása a feladat befejezésekor"
@@ -391,12 +382,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Asztal figyelmeztetés beállítva!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Ha ezt látod, akkor az asztali értesítők be vannak állítva és jól működnek! Hurrá! :)"
 	},
 	"noteNoLocalFiles": {
 		"message": "Úgy néz ki, mintha egy utat egy helyi fájlt készülék az egyéni hang URL-t.\nSajnos, a helyi fájlokat nem lehet használni, mivel a Chrome nem teszi lehetővé a hozzáférést a helyi fájlrendszer, még egy hang.\nCsak az internet URL (kezdődő http, https vagy ftp) lehet használni. Ez azt jelenti, hogy meg kell találni a megfelelő online, vagy töltse fel a kívánt hangot valahol."

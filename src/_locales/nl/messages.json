@@ -239,12 +239,6 @@
 	"optTrackHistory": {
 		"message": "Houd taak geschiedenis bij (zodat je statistieken kan bekijken voor elke taak)"
 	},
-	"optNoOvertime": {
-		"message": "Sta niet toe om de tijdsduur van een taak over de gestelde limiet te laten lopen"
-	},
-	"optStopTimer": {
-		"message": "Stop de taak wanneer het doel bereikt is"
-	},
 	"optOnlyOne": {
 		"message": "Sta toe om slechts 1 taak tegelijk te laten lopen"
 	},
@@ -256,9 +250,6 @@
 	},
 	"optShowPopup": {
 		"message": "Laat een notificatie pop-up zien op de pagina wanneer een taak zijn doel bereikt."
-	},
-	"optShowNotification": {
-		"message": "Laat een desktop notificatie zien wanneer een taak zijn doel bereikt"
 	},
 	"optPlaySound": {
 		"message": "Speel een geluid wanneer een taak zijn doel bereikt"
@@ -409,12 +400,6 @@
 				"example": "Chores"
 			}
 		}
-	},
-	"noteNotifsWork": {
-		"message": "Desktop Notificaties werken!"
-	},
-	"noteNotifsWorkBody": {
-		"message": "Als je dit ziet zijn desktop notificaties ingeschakeld en werkt alles correct! Yippy!"
 	},
 	"noteNoLocalFiles": {
 		"message": "Het ziet ernaar uit dat je een pad naar een lokaal bestand op je machine gebruikt voor de URL van het aangepaste geluid. Helaas kunnen lokale bestanden niet gebruikt worden, omdat Chrome geen toegang toestaat tot jouw lokale bestandensysteem, zelfs niet voor een geluidje. \nAlleen internet-URL's (beginnend met http, https of ftp) kunnen gebruikt worden. Dit betekent dat je online een geluid moet vinden, of het geluid dat je wilt ergens zal moeten uploaden."

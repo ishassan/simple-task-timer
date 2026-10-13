@@ -55,6 +55,19 @@ test('time adds up over a pause and over a long closed gap', () => {
   assert.equal(T.shownMs(list[0], 100 * MIN + 8 * 60 * MIN), 3 * MIN + 8 * 60 * MIN);
 });
 
+test('lastTask is the running task, else the task that ran last', () => {
+  let list = T.create([], 'a', 0, 'a');
+  list = T.create(list, 'b', 10, 'b');
+  list = T.start(list, 'a', 20);
+  assert.equal(T.lastTask(list).id, 'a');
+  list = T.pause(list, 'a', 30);
+  assert.equal(T.lastTask(list).id, 'a');
+  list = T.markDone(list, 'a', 40);
+  assert.equal(T.lastTask(list).id, 'b');
+  assert.equal(T.lastTask(T.removeDone(T.markDone(list, 'b', 50))), null);
+  assert.equal(T.lastTask([]), null);
+});
+
 test('reset sets the time to zero and stops the task', () => {
   let list = T.create([], 'x', 0, 'x');
   list = T.edit(list, 'x', { goalMs: MIN }, 0);

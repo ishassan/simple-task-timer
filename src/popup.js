@@ -110,6 +110,7 @@ function paintRow(li, task, now) {
 function makeRow(task, templateId, now) {
   const li = $(templateId).content.firstElementChild.cloneNode(true);
   li.dataset.id = task.id;
+  li.tabIndex = -1; // the arrow keys move the focus between rows
   li.querySelector('.name').textContent = task.name;
   li.querySelector('.name').title = task.name;
   paintRow(li, task, now);
@@ -172,9 +173,10 @@ function openEdit(li, task, kept) {
 }
 
 function closeEdit() {
+  const id = editingId;
   editingId = null;
   render();
-  $('name').focus();
+  focusTask(id);
 }
 
 function saveEdit(form, id) {
@@ -205,12 +207,34 @@ function saveEdit(form, id) {
   }
 
   editingId = null;
-  act((list, now) => Tasks.edit(list, id, changes, now)).then(() => $('name').focus());
+  act((list, now) => Tasks.edit(list, id, changes, now)).then(() => focusTask(id));
+}
+
+// ---- Keyboard focus ----
+
+// The rows the arrow keys can reach: the list, and the Done group when open
+function focusableRows() {
+  return [...document.querySelectorAll('#list .task, #done-group[open] #done-list .task')];
+}
+
+function focusTask(id) {
+  const li = id && document.querySelector(`.task[data-id="${CSS.escape(id)}"]`);
+  if (li) li.focus();
+  else $('name').focus();
+}
+
+function focusRow(index) {
+  const rows = focusableRows();
+  if (index < 0 || rows.length === 0) $('name').focus();
+  else rows[Math.min(index, rows.length - 1)].focus();
 }
 
 function render() {
   const now = Date.now();
   const kept = readEdit();
+  const focused = document.activeElement;
+  const focusedId = focused && focused.classList && focused.classList.contains('task') ? focused.dataset.id : null;
+  const focusedIndex = focusedId ? focusableRows().indexOf(focused) : -1;
   if (editingId && !tasks.some(t => t.id === editingId && !t.done)) editingId = null;
 
   const active = tasks.filter(t => !t.done);
@@ -230,6 +254,11 @@ function render() {
     const li = list.querySelector(`[data-id="${CSS.escape(editingId)}"]`);
     const task = tasks.find(t => t.id === editingId);
     openEdit(li, task, kept && kept.id === editingId ? kept : null);
+  } else if (focusedId) {
+    // Keep the keyboard focus on the same task, or on the row that took its place
+    const li = document.querySelector(`.task[data-id="${CSS.escape(focusedId)}"]`);
+    if (li && focusableRows().includes(li)) li.focus();
+    else focusRow(focusedIndex);
   }
   renderPrompt();
 }
@@ -247,9 +276,68 @@ function tick() {
   }
 }
 
+// ---- Keys ----
+
+// Space in the empty name field pauses or resumes the last task
+function toggleLast() {
+  const task = Tasks.lastTask(tasks);
+  if (task) actions.toggle(task.id);
+}
+
+function onKey(e) {
+  if (e.defaultPrevented || e.altKey) return;
+  const target = e.target;
+  const inText = target instanceof HTMLInputElement;
+
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey && !inText) {
+    if (undoList) {
+      e.preventDefault();
+      undo();
+    }
+    return;
+  }
+  if (e.ctrlKey || e.metaKey) return;
+
+  if (target === $('name')) {
+    if (e.key === ' ' && $('name').value === '') {
+      e.preventDefault();
+      toggleLast();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      focusRow(0);
+    }
+    return;
+  }
+
+  // The rest works on a focused row (not on its buttons or its edit area)
+  if (!target.classList || !target.classList.contains('task')) return;
+  const id = target.dataset.id;
+  const inDone = !!target.closest('#done-list');
+  const index = focusableRows().indexOf(target);
+  switch (e.key) {
+    case 'ArrowDown': focusRow(index + 1); break;
+    case 'ArrowUp': focusRow(index - 1); break;
+    case ' ': actions.toggle(id); break;
+    case 'Enter': case 'e': case 'E':
+      if (!inDone) {
+        editingId = id;
+        render();
+      }
+      break;
+    case 'r': case 'R': if (!inDone) actions.reset(id); break;
+    case 'd': case 'D': if (!inDone) actions.done(id); break;
+    case 'Delete': case 'Backspace': actions.delete(id); break;
+    case 'Escape': $('name').focus(); break;
+    default: return;
+  }
+  e.preventDefault();
+}
+
 // ---- Events ----
 
 function wire() {
+  document.addEventListener('keydown', onKey);
+
   $('new-task').addEventListener('submit', e => {
     e.preventDefault();
     const name = $('name').value;

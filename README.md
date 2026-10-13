@@ -14,6 +14,15 @@ Firefox Add-ons page: https://addons.mozilla.org/en-US/firefox/addon/simple-task
 - A task can have a goal. The timer keeps counting after the goal. When the task reaches its goal, the toolbar badge turns green, and you get one desktop notification if you allowed notifications.
 - While a task runs, the toolbar icon shows its time.
 
+## Keys
+
+- **Alt+Shift+T** opens the popup. The cursor is in the name field, so Alt+Shift+T then Enter starts a new task. You can change this key in Firefox: Add-ons and themes, gear menu, Manage Extension Shortcuts.
+- In the name field: **Enter** starts a new task. **Space** (with the field empty) pauses or resumes the last task. **Down arrow** goes to the list.
+- On a task: **Up** and **Down arrows** move between tasks, **Space** starts or pauses, **Enter** or **E** edits, **R** resets, **D** marks done, **Delete** deletes, **Escape** goes back to the name field.
+- **Ctrl+Z** (Cmd+Z on a Mac) undoes the last reset, done or delete while the Undo bar shows.
+
+Keyboard shortcuts are for Firefox on a computer. Firefox for Android has no keyboard shortcuts for add-ons.
+
 The add-on asks for the notification permission only when you set a goal, and only if you click "Turn on". It works without that permission.
 
 ## Build

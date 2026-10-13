@@ -195,6 +195,45 @@ HARNESS_JS = '''
     check('the next name counts done tasks', document.getElementById('name').placeholder === 'Task 3',
           document.getElementById('name').placeholder);
 
+    // ---- Keys ----
+    const key = (el, k, more) => el.dispatchEvent(new KeyboardEvent('keydown', Object.assign({key: k, bubbles: true, cancelable: true}, more || {})));
+    const nameField = document.getElementById('name');
+    const focusedName = () => document.activeElement && document.activeElement.classList.contains('task')
+      ? document.activeElement.querySelector('.name').textContent : (document.activeElement || {}).id;
+    nameField.focus();
+    key(nameField, ' ');
+    await sleep(300);
+    check('Space in the empty name field resumes the last task', (await task('Task 1')).startedAt != null);
+    key(nameField, ' ');
+    await sleep(300);
+    check('Space in the empty name field pauses the running task', (await task('Task 1')).startedAt == null &&
+          nameField.value === '');
+    key(nameField, 'ArrowDown');
+    check('Down arrow in the name field goes to the first row', focusedName() === 'Task 1', focusedName());
+    key(document.activeElement, ' ');
+    await sleep(300);
+    check('Space on a row starts it, and the row keeps the focus',
+          (await task('Task 1')).startedAt != null && focusedName() === 'Task 1', focusedName());
+    key(document.activeElement, 'r');
+    await sleep(300);
+    check('R resets the row', (await task('Task 1')).elapsedMs === 0 && (await task('Task 1')).startedAt == null);
+    key(document.activeElement, 'z', {ctrlKey: true});
+    await sleep(300);
+    check('Ctrl+Z is Undo', (await task('Task 1')).startedAt != null && !visible('toast'));
+    key(document.activeElement, 'e');
+    await sleep(200);
+    const keyForm = document.querySelector('form.edit');
+    check('E opens the edit area', !!keyForm && keyForm.closest('.task').dataset.id === (await task('Task 1')).id);
+    key(document.activeElement, 'Escape');
+    await sleep(200);
+    check('Escape closes the edit area and goes back to the row',
+          !document.querySelector('form.edit') && focusedName() === 'Task 1', focusedName());
+    key(document.activeElement, ' ');
+    await sleep(300);
+    check('Space on a row pauses it', (await task('Task 1')).startedAt == null);
+    key(document.activeElement, 'ArrowUp');
+    check('Up arrow on the first row goes back to the name field', document.activeElement === nameField);
+
     let form = await edit('Task 1', {goal: 'abc'});
     check('a bad goal shows an error and is not saved',
           !form.querySelector('.error').hidden && (await task('Task 1')).goalMs == null);
@@ -408,6 +447,8 @@ def main():
             line += '  (' + str(detail) + ')'
         results.append(line)
 
+    check('a shortcut opens the popup (Alt+Shift+T)',
+          manifest.get('commands', {}).get('_execute_action', {}).get('suggested_key', {}).get('default') == 'Alt+Shift+T')
     check('notifications is only an optional permission',
           'notifications' not in manifest.get('permissions', []) and
           'notifications' in manifest.get('optional_permissions', []))

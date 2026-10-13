@@ -132,6 +132,8 @@ input {
 ul { list-style: none; margin: 0; padding: 0; }
 
 .task { border-bottom: 1px solid var(--line); }
+.task:focus { outline: none; }
+.task:focus-visible { box-shadow: inset 3px 0 0 var(--accent); }
 
 .line {
   display: flex;

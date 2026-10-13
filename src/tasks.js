@@ -6,7 +6,7 @@
 // and the unit tests all use it. Each change returns a new list and does not
 // change the list it gets.
 //
-// A task: {id, name, elapsedMs, startedAt, goalMs, goalNotified, done, createdAt}
+// A task: {id, name, elapsedMs, startedAt, goalMs, goalNotified, done, createdAt, lastRunAt}
 // A task runs when startedAt is a timestamp. Its time is then
 // elapsedMs + (now - startedAt), so it needs no ticking.
 
@@ -37,6 +37,17 @@
 
   function runningTask(tasks) {
     return tasks.find(isRunning) || null;
+  }
+
+  // The running task, else the task (not done) that ran last, else null
+  function lastTask(tasks) {
+    const running = runningTask(tasks);
+    if (running) return running;
+    let last = null;
+    for (const t of tasks) {
+      if (!t.done && t.lastRunAt != null && (!last || t.lastRunAt > last.lastRunAt)) last = t;
+    }
+    return last;
   }
 
   // "Task N": N is 1 + the highest number in a task named "Task <number>"
@@ -74,13 +85,14 @@
       goalNotified: false,
       done: false,
       createdAt: now,
+      lastRunAt: now,
     };
     return [task, ...pauseAll(tasks, now)];
   }
 
   // Starts a task and pauses the one that runs. A done task comes back.
   function start(tasks, id, now) {
-    return update(pauseAll(tasks, now), id, t => ({ ...t, startedAt: now, done: false }));
+    return update(pauseAll(tasks, now), id, t => ({ ...t, startedAt: now, lastRunAt: now, done: false }));
   }
 
   function pause(tasks, id, now) {
@@ -190,7 +202,7 @@
   }
 
   const api = {
-    isRunning, shownMs, goalReached, goalTime, runningTask, nextName,
+    isRunning, shownMs, goalReached, goalTime, runningTask, lastTask, nextName,
     create, start, pause, reset, markDone, remove, removeDone, edit, setGoalNotified,
     parseDuration, formatClock, formatShort, badgeText,
   };

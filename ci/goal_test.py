@@ -8,6 +8,9 @@ Usage:
     pip install selenium
     python3 ci/goal_test.py [path to the add-on src folder]
 
+Set FIREFOX_BIN to use a Firefox that is not in the usual place.
+Run by .github/workflows/goal-test.yml.
+
 The script copies the add-on and adds two test scripts to the copy: a seed
 script (background page) that stores the settings and tasks and opens
 main.html, and a harness script (main.html) that records what happens and
@@ -203,6 +206,8 @@ def main():
     threading.Thread(target=server.serve_forever, daemon=True).start()
 
     opts = Options()
+    if os.environ.get('FIREFOX_BIN'):
+        opts.binary_location = os.environ['FIREFOX_BIN']
     opts.add_argument('-headless')
     opts.add_argument('--width=1400')   # a small window makes the page ask a question
     opts.add_argument('--height=1000')

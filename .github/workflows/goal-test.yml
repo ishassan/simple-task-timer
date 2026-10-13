@@ -1,0 +1,34 @@
+# Runs the add-on in headless Firefox and checks that a task with a goal
+# keeps running after the goal and sends one desktop notification.
+name: Goal test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/**'
+      - 'ci/goal_test.py'
+      - '.github/workflows/goal-test.yml'
+
+jobs:
+  goal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+
+      - name: Install Firefox
+        id: firefox
+        uses: browser-actions/setup-firefox@v1
+
+      - name: Install Selenium
+        run: pip install selenium
+
+      - name: Run the test
+        env:
+          FIREFOX_BIN: ${{ steps.firefox.outputs.firefox-path }}
+        run: python3 ci/goal_test.py

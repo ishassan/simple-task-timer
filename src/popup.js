@@ -402,9 +402,16 @@ async function init() {
   wire();
   // On a phone, the keyboard would cover the list, so do not focus there
   if (!matchMedia('(pointer: coarse)').matches) $('name').focus();
-  [tasks, canNotify, promptDismissed] = await Promise.all([
-    Store.loadTasks(), Store.canNotify(), Store.promptDismissed(),
+  let platform;
+  [tasks, canNotify, promptDismissed, platform] = await Promise.all([
+    Store.loadTasks(), Store.canNotify(), Store.promptDismissed(), browser.runtime.getPlatformInfo(),
   ]);
+  // Firefox for Android shows the popup as a full page. Some devices do not
+  // report a touch pointer, so the platform sets the phone layout.
+  if (platform.os === 'android') {
+    document.documentElement.classList.add('android');
+    $('name').blur();
+  }
   render();
   setInterval(tick, 1000);
 }

@@ -157,6 +157,19 @@ def test_copy():
     return copy
 
 
+def fills_width():
+    """True when the task form is as wide as the page (no empty strip at the right)."""
+    xml = ui_xml()
+    if not xml:
+        return False
+    nodes = list(ET.fromstring(xml).iter('node'))
+    box = lambda n: list(map(int, re.findall(r'\d+', n.get('bounds', ''))))
+    page = next((box(n) for n in nodes if n.get('class') == 'android.webkit.WebView'), None)
+    form = next((box(n) for n in nodes if n.get('resource-id') == 'new-task'), None)
+    print('page', page, 'form', form)
+    return bool(page and form) and form[2] >= page[2] - 2
+
+
 def on_popup():
     return bool(find(r'^name$|^start$'))
 
@@ -204,9 +217,14 @@ def main():
     shot('after-install')
     tap(r'^OK$', timeout=5)
 
-    # Try to open the popup the way a user would: menu, Extensions, Simple
-    # Task Timer. On Android the popup opens as a page. If the menu leads to
-    # the add-on manager instead, the screenshots show the way it went.
+    # Open the popup the way a user would: menu, Extensions, Simple Task
+    # Timer. The menu lists add-on buttons only while a web page shows; on the
+    # home screen, "Extensions" opens the add-on manager. So open a page first.
+    # On Android the popup opens as a page.
+    adb('shell', 'am', 'start', '-a', 'android.intent.action.VIEW',
+        '-d', 'https://example.com/', PKG, check=False)
+    time.sleep(8)
+    shot('web-page')
     from_menu = False
     if open_menu():
         shot('main-menu')
@@ -238,6 +256,7 @@ def main():
         opened = on_popup()
     shot('popup')
     record('Opened the popup page', opened)
+    record('The popup page fills the screen width', opened and fills_width())
 
     # Start a task with no name: one tap on Start gives "Task 1"
     started = tap(r'^start$')

@@ -46,6 +46,7 @@ body { width: 380px; }
 @media (pointer: coarse) {
   body { width: auto; }
 }
+.android body { width: auto; }
 
 [hidden] { display: none !important; }
 
@@ -176,6 +177,8 @@ button.icon.delete:hover { color: var(--danger); }
   button, input { min-height: 40px; }
   button.icon { width: 40px; }
 }
+.android button, .android input { min-height: 40px; }
+.android button.icon { width: 40px; }
 
 .task.running { background: var(--accent-soft); }
 .task.running .name { font-weight: 600; }

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Test the add-on in headless Firefox: the task buttons, Undo, the goal,
-the badge and the optional notification.
+"""Test the add-on in headless Firefox: the task buttons, the keys, Undo, the
+Preferences page, the goal, the badge and the optional notification.
 
 Usage:
     pip install selenium
@@ -238,6 +238,64 @@ HARNESS_JS = '''
     key(document.activeElement, 'ArrowUp');
     check('Up arrow on the first row goes back to the name field', document.activeElement === nameField);
 
+    // ---- Preferences page (loaded in a frame of this page) ----
+    const frame = document.createElement('iframe');
+    frame.src = 'options.html';
+    document.body.append(frame);
+    await new Promise(r => frame.addEventListener('load', r, {once: true}));
+    await sleep(500);
+    const od = frame.contentDocument, ow = frame.contentWindow;
+    const okey = (k, code, more) => od.dispatchEvent(new ow.KeyboardEvent('keydown',
+      Object.assign({key: k, code: code || '', bubbles: true, cancelable: true}, more || {})));
+    const shortcutNow = async () => ((await browser.commands.getAll()).find(c => c.name === '_execute_action') || {}).shortcut;
+    check('Preferences shows the shortcut that opens the popup', od.getElementById('open-key').textContent === 'Alt+W' ||
+          od.getElementById('open-key').textContent === 'Option+W', od.getElementById('open-key').textContent);
+    od.getElementById('open-key').click();
+    okey('Y', 'KeyY', {altKey: true, shiftKey: true});
+    await sleep(500);
+    check('Preferences records a new shortcut', (await shortcutNow()) === 'Alt+Shift+Y', await shortcutNow());
+    od.getElementById('open-key').click();
+    okey('y', 'KeyY');
+    await sleep(300);
+    check('a shortcut with no modifier is refused', !od.getElementById('open-error').hidden &&
+          (await shortcutNow()) === 'Alt+Shift+Y', od.getElementById('open-error').textContent);
+    od.getElementById('open-reset').click();
+    await sleep(500);
+    check('Reset brings back Alt+W', (await shortcutNow()) === 'Alt+W', await shortcutNow());
+    const keyBox = action => od.querySelector('button.key[data-action="' + action + '"]');
+    keyBox('reset').click();
+    okey('x', 'KeyX');
+    await sleep(300);
+    check('Preferences saves a new row key', (await browser.storage.local.get('keys')).keys.reset === 'x' &&
+          keyBox('reset').textContent === 'X', (await browser.storage.local.get('keys')).keys);
+    await sleep(200);
+    const tips = name => [...row(name).querySelectorAll('.line button')].map(b => b.title);
+    check('button tooltips show the action and the key, with the new key',
+          tips('Task 1').join('|') === 'Start (Space)|Reset (X)|Done (D)|Delete (Delete key)', tips('Task 1'));
+    check('the Start button tooltip shows Enter', document.getElementById('start').title === 'Start a new task (Enter)',
+          document.getElementById('start').title);
+    check('the Undo tooltip shows its key', /^Undo \\((Ctrl|Command)\\+Z\\)$/.test(document.getElementById('undo').title),
+          document.getElementById('undo').title);
+    keyBox('edit').click();
+    okey('d', 'KeyD');
+    await sleep(300);
+    check('a key that another action has is refused', !od.getElementById('keys-error').hidden &&
+          (await browser.storage.local.get('keys')).keys.edit === 'e', od.getElementById('keys-error').textContent);
+    await sleep(300);
+    nameField.focus();
+    key(nameField, 'ArrowDown');
+    key(document.activeElement, 'r');
+    await sleep(300);
+    check('the old reset key does nothing after the change', (await task('Task 1')).elapsedMs > 0);
+    key(document.activeElement, 'x');
+    await sleep(300);
+    check('the new reset key resets the task', (await task('Task 1')).elapsedMs === 0, await task('Task 1'));
+    od.getElementById('keys-reset').click();
+    await sleep(300);
+    check('Reset all keys brings back R', (await browser.storage.local.get('keys')).keys.reset === 'r');
+    frame.remove();
+    nameField.focus();
+
     let form = await edit('Task 1', {goal: 'abc'});
     check('a bad goal shows an error and is not saved',
           !form.querySelector('.error').hidden && (await task('Task 1')).goalMs == null);
@@ -453,6 +511,7 @@ def main():
 
     check('a shortcut opens the popup (Alt+W)',
           manifest.get('commands', {}).get('_execute_action', {}).get('suggested_key', {}).get('default') == 'Alt+W')
+    check('the add-on has a Preferences page', manifest.get('options_ui', {}).get('page') == 'options.html')
     check('notifications is only an optional permission',
           'notifications' not in manifest.get('permissions', []) and
           'notifications' in manifest.get('optional_permissions', []))

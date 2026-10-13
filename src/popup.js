@@ -15,6 +15,7 @@ let canNotify = false;
 let promptDismissed = false;
 let toastTimer = null;
 let undoList = null;
+let rowKeys = Keys.DEFAULT_KEYS;  // the keys that act on a focused row
 
 // ---- Changes ----
 
@@ -80,10 +81,15 @@ async function undo() {
 
 // ---- Drawing ----
 
-function setToggle(button, running) {
-  const label = running ? 'Pause' : 'Start';
-  button.title = label;
+// A tooltip with the action and its key: "Reset (R)"
+function setTip(button, label, action) {
+  button.title = `${label} (${Keys.keyHint(rowKeys[action])})`;
   button.setAttribute('aria-label', label);
+  button.setAttribute('aria-keyshortcuts', Keys.keyLabel(rowKeys[action]));
+}
+
+function setToggle(button, running) {
+  setTip(button, running ? 'Pause' : 'Start', 'toggle');
   button.querySelector('use').setAttribute('href', running ? '#i-pause' : '#i-play');
 }
 
@@ -113,6 +119,11 @@ function makeRow(task, templateId, now) {
   li.tabIndex = -1; // the arrow keys move the focus between rows
   li.querySelector('.name').textContent = task.name;
   li.querySelector('.name').title = task.name;
+  if (task.done) setTip(li.querySelector('.toggle'), 'Start again', 'toggle');
+  for (const [cls, label] of [['reset', 'Reset'], ['done', 'Done'], ['delete', 'Delete']]) {
+    const button = li.querySelector('.' + cls);
+    if (button) setTip(button, label, cls);
+  }
   paintRow(li, task, now);
   return li;
 }
@@ -314,22 +325,24 @@ function onKey(e) {
   const id = target.dataset.id;
   const inDone = !!target.closest('#done-list');
   const index = focusableRows().indexOf(target);
-  switch (e.key) {
-    case 'ArrowDown': focusRow(index + 1); break;
-    case 'ArrowUp': focusRow(index - 1); break;
-    case ' ': actions.toggle(id); break;
-    case 'Enter': case 'e': case 'E':
-      if (!inDone) {
-        editingId = id;
-        render();
-      }
-      break;
-    case 'r': case 'R': if (!inDone) actions.reset(id); break;
-    case 'd': case 'D': if (!inDone) actions.done(id); break;
-    case 'Delete': case 'Backspace': actions.delete(id); break;
-    case 'Escape': $('name').focus(); break;
-    default: return;
-  }
+  const key = Keys.keyOf(e);
+  // Arrows, Enter and Escape are fixed. The other keys come from Preferences.
+  const action = key === 'Enter' ? 'edit' : Keys.actionFor(rowKeys, key);
+  if (key === 'ArrowDown') focusRow(index + 1);
+  else if (key === 'ArrowUp') focusRow(index - 1);
+  else if (key === 'Escape') $('name').focus();
+  else if (action === 'toggle') actions.toggle(id);
+  else if (action === 'edit') {
+    if (!inDone) {
+      editingId = id;
+      render();
+    }
+  } else if (action === 'reset') {
+    if (!inDone) actions.reset(id);
+  } else if (action === 'done') {
+    if (!inDone) actions.done(id);
+  } else if (action === 'delete') actions.delete(id);
+  else return;
   e.preventDefault();
 }
 
@@ -393,6 +406,10 @@ function wire() {
       tasks = changes.tasks.newValue || [];
       render();
     }
+    if (area === 'local' && changes.keys) {
+      rowKeys = Keys.withDefaults(changes.keys.newValue);
+      render();  // the tooltips show the keys
+    }
   });
   browser.permissions.onAdded.addListener(() => Store.canNotify().then(v => { canNotify = v; renderPrompt(); }));
   browser.permissions.onRemoved.addListener(() => Store.canNotify().then(v => { canNotify = v; renderPrompt(); }));
@@ -403,11 +420,13 @@ async function init() {
   // On a phone, the keyboard would cover the list, so do not focus there
   if (!matchMedia('(pointer: coarse)').matches) $('name').focus();
   let platform;
-  [tasks, canNotify, promptDismissed, platform] = await Promise.all([
+  [tasks, canNotify, promptDismissed, platform, rowKeys] = await Promise.all([
     Store.loadTasks(), Store.canNotify(), Store.promptDismissed(), browser.runtime.getPlatformInfo(),
+    Store.loadKeys(),
   ]);
   // Firefox for Android shows the popup as a full page. Some devices do not
   // report a touch pointer, so the platform sets the phone layout.
+  $('undo').title = `Undo (${platform.os === 'mac' ? 'Command' : 'Ctrl'}+Z)`;
   if (platform.os === 'android') {
     document.documentElement.classList.add('android');
     $('name').blur();

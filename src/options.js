@@ -147,6 +147,9 @@ async function init() {
   });
   $('open-reset').addEventListener('click', async () => {
     await browser.commands.reset(COMMAND);
+    // Firefox does not send commands.onChanged for a reset, so tell an open
+    // popup. With no popup open, nothing receives the message.
+    browser.runtime.sendMessage('shortcut-reset').catch(() => {});
     showError('open-error', '');
     await showShortcut();
     showStatus('Saved. The shortcut is back to ' + $('open-key').textContent + '.');

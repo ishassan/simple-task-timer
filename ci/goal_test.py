@@ -296,6 +296,41 @@ HARNESS_JS = '''
     frame.remove();
     nameField.focus();
 
+    // ---- The shortcut that opens the popup also closes it from a text field ----
+    // Option+W on a Mac types "\\u2211" (the key is "\\u2211", the code is KeyW)
+    let closes = 0;
+    const realClose = window.close;
+    window.close = () => { closes++; };
+    const press = (el, k, code, more) => {
+      const e = new KeyboardEvent('keydown', Object.assign({key: k, code, bubbles: true, cancelable: true}, more));
+      el.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    let stopped = press(nameField, '\\u2211', 'KeyW', {altKey: true});
+    check('Alt+W in the name field closes the popup and types nothing', stopped && closes === 1, {stopped, closes});
+    key(nameField, 'ArrowDown');
+    stopped = press(document.activeElement, '\\u2211', 'KeyW', {altKey: true});
+    check('Alt+W on a row is left to Firefox, which closes the popup', !stopped && closes === 1, {stopped, closes});
+    row('Task 1').querySelector('.name').click();
+    await sleep(200);
+    const editName = document.querySelector('form.edit [name="name"]');
+    editName.focus();
+    stopped = press(editName, '\\u2211', 'KeyW', {altKey: true});
+    check('Alt+W in the edit area closes the popup', stopped && closes === 2, {stopped, closes});
+    editName.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', bubbles: true}));
+    await sleep(200);
+    await browser.commands.update({name: '_execute_action', shortcut: 'Alt+Shift+Y'});
+    await sleep(300);
+    nameField.focus();
+    stopped = press(nameField, '\\u2211', 'KeyW', {altKey: true});
+    check('after a change, the old shortcut is a normal key in the name field', !stopped && closes === 2, {stopped, closes});
+    stopped = press(nameField, 'Y', 'KeyY', {altKey: true, shiftKey: true});
+    check('after a change, the new shortcut closes the popup from the name field', stopped && closes === 3, {stopped, closes});
+    await browser.commands.reset('_execute_action');
+    await sleep(300);
+    window.close = realClose;
+    nameField.focus();
+
     let form = await edit('Task 1', {goal: 'abc'});
     check('a bad goal shows an error and is not saved',
           !form.querySelector('.error').hidden && (await task('Task 1')).goalMs == null);

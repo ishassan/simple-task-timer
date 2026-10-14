@@ -11,7 +11,8 @@
 //   case. "Delete" also matches Backspace (the Mac delete key).
 // - The shortcut that opens the popup: a Firefox command such as "Alt+W".
 //   Firefox checks it, and these rules follow Firefox's rules: at most two
-//   modifiers, Shift alone is not enough, and only some key names.
+//   modifiers, Shift alone is not enough, and only some key names. The same
+//   shortcut closes the popup.
 
 (function (root) {
   'use strict';
@@ -116,6 +117,21 @@
     return { shortcut: mods.concat(key).join('+') };
   }
 
+  // True if a keydown event is the shortcut (a Firefox command such as
+  // "Alt+W"). The order of the modifiers does not matter. On a Mac, "Ctrl" in
+  // a shortcut is the Command key and "MacCtrl" is the Control key.
+  function matchesShortcut(e, shortcut, isMac) {
+    if (!shortcut) return false;
+    const r = shortcutFromEvent(e, isMac);
+    if (!r || !r.shortcut) return false;
+    const parts = s => {
+      const p = s.split('+');
+      const mods = p.slice(0, -1).map(m => (isMac && m === 'Ctrl' ? 'Command' : m)).sort();
+      return mods.concat(p[p.length - 1]).join('+');
+    };
+    return parts(r.shortcut) === parts(shortcut);
+  }
+
   // "Alt+Shift+W" as the user sees it
   function shortcutLabel(shortcut, isMac) {
     if (!shortcut) return 'Not set';
@@ -125,7 +141,7 @@
 
   const api = {
     DEFAULT_KEYS, ACTIONS, FIXED, keyOf, keyLabel, keyHint, withDefaults, actionFor, checkKey,
-    shortcutKey, shortcutFromEvent, shortcutLabel,
+    shortcutKey, shortcutFromEvent, matchesShortcut, shortcutLabel,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

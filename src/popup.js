@@ -16,6 +16,8 @@ let promptDismissed = false;
 let toastTimer = null;
 let undoList = null;
 let rowKeys = Keys.DEFAULT_KEYS;  // the keys that act on a focused row
+let openShortcut = '';            // the Firefox shortcut that opens the popup
+let isMac = false;
 
 // ---- Changes ----
 
@@ -346,10 +348,39 @@ function onKey(e) {
   e.preventDefault();
 }
 
+// The shortcut that opens the popup also closes it. Firefox does this when
+// the focus is not in a text field. In a text field, the field takes the key
+// and types it (Option+W types "∑" on a Mac), so the popup closes itself.
+function onShortcut(e) {
+  const t = e.target;
+  const inText = t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t.isContentEditable;
+  if (!inText || !Keys.matchesShortcut(e, openShortcut, isMac)) return;
+  e.preventDefault();
+  e.stopPropagation();
+  window.close();
+}
+
+// Firefox for Android has no keyboard shortcuts for add-ons
+async function loadShortcut() {
+  if (!browser.commands || !browser.commands.getAll) return '';
+  const cmd = (await browser.commands.getAll()).find(c => c.name === '_execute_action');
+  return cmd && cmd.shortcut ? cmd.shortcut : '';
+}
+
 // ---- Events ----
 
 function wire() {
+  document.addEventListener('keydown', onShortcut, true);
   document.addEventListener('keydown', onKey);
+  if (browser.commands && browser.commands.onChanged) {
+    browser.commands.onChanged.addListener(c => {
+      if (c.name === '_execute_action') openShortcut = c.newShortcut || '';
+    });
+  }
+  // The Preferences page sends this after a reset (Firefox sends no onChanged)
+  browser.runtime.onMessage.addListener(m => {
+    if (m === 'shortcut-reset') loadShortcut().then(s => { openShortcut = s; });
+  });
 
   $('new-task').addEventListener('submit', e => {
     e.preventDefault();
@@ -420,13 +451,14 @@ async function init() {
   // On a phone, the keyboard would cover the list, so do not focus there
   if (!matchMedia('(pointer: coarse)').matches) $('name').focus();
   let platform;
-  [tasks, canNotify, promptDismissed, platform, rowKeys] = await Promise.all([
+  [tasks, canNotify, promptDismissed, platform, rowKeys, openShortcut] = await Promise.all([
     Store.loadTasks(), Store.canNotify(), Store.promptDismissed(), browser.runtime.getPlatformInfo(),
-    Store.loadKeys(),
+    Store.loadKeys(), loadShortcut(),
   ]);
+  isMac = platform.os === 'mac';
   // Firefox for Android shows the popup as a full page. Some devices do not
   // report a touch pointer, so the platform sets the phone layout.
-  $('undo').title = `Undo (${platform.os === 'mac' ? 'Command' : 'Ctrl'}+Z)`;
+  $('undo').title = `Undo (${isMac ? 'Command' : 'Ctrl'}+Z)`;
   if (platform.os === 'android') {
     document.documentElement.classList.add('android');
     $('name').blur();

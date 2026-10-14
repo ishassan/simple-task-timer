@@ -57,3 +57,22 @@ test('shortcutFromEvent follows the Firefox rules', () => {
   assert.ok(K.shortcutFromEvent(ev('/', 'Slash', { altKey: true }), false).error);
   assert.ok(K.shortcutFromEvent(ev('w', 'KeyW', { metaKey: true }), false).error);
 });
+
+test('matchesShortcut finds the shortcut that opens the popup', () => {
+  // Option+W on a Mac types "∑" in a text field, but it is still the shortcut
+  assert.equal(K.matchesShortcut(ev('∑', 'KeyW', { altKey: true }), 'Alt+W', true), true);
+  assert.equal(K.matchesShortcut(ev('w', 'KeyW', { altKey: true }), 'Alt+W', false), true);
+  assert.equal(K.matchesShortcut(ev('w', 'KeyW'), 'Alt+W', false), false);
+  assert.equal(K.matchesShortcut(ev('W', 'KeyW', { altKey: true, shiftKey: true }), 'Alt+W', false), false);
+  assert.equal(K.matchesShortcut(ev('e', 'KeyE', { altKey: true }), 'Alt+W', false), false);
+  // The order of the modifiers does not matter
+  assert.equal(K.matchesShortcut(ev('Y', 'KeyY', { altKey: true, shiftKey: true }), 'Shift+Alt+Y', false), true);
+  // On a Mac, "Ctrl" in a shortcut is the Command key, and "MacCtrl" is Control
+  assert.equal(K.matchesShortcut(ev('y', 'KeyY', { metaKey: true }), 'Ctrl+Y', true), true);
+  assert.equal(K.matchesShortcut(ev('y', 'KeyY', { ctrlKey: true }), 'Ctrl+Y', true), false);
+  assert.equal(K.matchesShortcut(ev('y', 'KeyY', { ctrlKey: true }), 'MacCtrl+Y', true), true);
+  assert.equal(K.matchesShortcut(ev('y', 'KeyY', { ctrlKey: true }), 'Ctrl+Y', false), true);
+  // No shortcut set
+  assert.equal(K.matchesShortcut(ev('∑', 'KeyW', { altKey: true }), '', true), false);
+  assert.equal(K.matchesShortcut(ev('∑', 'KeyW', { altKey: true }), undefined, true), false);
+});

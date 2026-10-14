@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 const T = require('../src/tasks.js');
 
 const MIN = 60 * 1000;
+const HOUR = 60 * MIN;
 let ids = 0;
 const id = () => 'id' + ++ids;
 
@@ -151,10 +152,12 @@ test('a paused task has no goal time', () => {
 test('parseDuration reads the loose formats', () => {
   const cases = {
     '1:20:00': 80 * MIN,
-    '20:00': 20 * MIN,
-    '0:30': 30 * 1000,
-    '90': 90 * MIN,
-    '1.5': 90 * 1000,
+    '3:2:1': 3 * HOUR + 2 * MIN + 1000,
+    '3:30': 3 * HOUR + 30 * MIN,
+    '0:30': 30 * MIN,
+    '0:0:30': 30 * 1000,
+    '3': 3 * HOUR,
+    '1.5': 90 * MIN,
     '45m': 45 * MIN,
     '45 min': 45 * MIN,
     '1h': 60 * MIN,

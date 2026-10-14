@@ -181,18 +181,18 @@
 
   // Reads a duration. Returns milliseconds, null for an empty text, or NaN
   // for a text it cannot read.
-  //   "1:20:00" = h:mm:ss, "20:00" = m:ss, "90" = minutes,
+  // Numbers with no unit fill hours first, then minutes, then seconds:
+  //   "3" = 3 h, "3:30" = 3 h 30 m, "3:2:1" = 3 h 2 m 1 s, "1.5" = 1.5 h,
   //   "45m", "1h", "1h 5m", "1.5h", "30s", "1h5m10s"
   function parseDuration(text) {
     const s = String(text == null ? '' : text).trim().toLowerCase();
     if (s === '') return null;
 
-    if (/^\d+(\.\d+)?$/.test(s)) return Math.round(Number(s) * MINUTE);
+    if (/^\d+(\.\d+)?$/.test(s)) return Math.round(Number(s) * HOUR);
 
     if (/^\d+(:\d{1,2}){1,2}$/.test(s)) {
-      const parts = s.split(':').map(Number);
-      if (parts.slice(1).some(p => p > 59)) return NaN;
-      const [h, m, sec] = parts.length === 3 ? parts : [0, parts[0], parts[1]];
+      const [h, m, sec = 0] = s.split(':').map(Number);
+      if (m > 59 || sec > 59) return NaN;
       return h * HOUR + m * MINUTE + sec * SECOND;
     }
 

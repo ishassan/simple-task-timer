@@ -338,7 +338,7 @@ HARNESS_JS = '''
     await sleep(200);
     check('Escape closes the edit area', !document.querySelector('form.edit'));
 
-    await edit('Task 1', {name: 'Goal A', time: '0:00', goal: '0:03'});
+    await edit('Task 1', {name: 'Goal A', time: '0:00', goal: '0:00:03'});
     t1 = await task('Goal A');
     check('edit saves the name, the time and the goal',
           t1 && t1.goalMs === 3000 && t1.elapsedMs === 0, t1);
@@ -372,7 +372,7 @@ HARNESS_JS = '''
     // ---- Phase B: the test grants the permission ----
     await until(() => browser.permissions.contains({permissions: ['notifications']}), 30000);
     await submitNew('Goal B');
-    await edit('Goal B', {time: '0:00', goal: '0:02'});
+    await edit('Goal B', {time: '0:00', goal: '0:00:02'});
     await until(async () => (await task('Goal B')).goalNotified, 8000);
     await sleep(3000);
     const sent = (await notes()).filter(n => n.message.includes('"Goal B"'));

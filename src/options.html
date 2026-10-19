@@ -34,6 +34,18 @@
     <p class="hint">Keys that do not change: Up and Down arrows move between tasks, Enter edits, Escape goes back to the name field, and <span class="undo-key">Ctrl+Z</span> undoes. In the empty name field, Space pauses or resumes the last task.</p>
   </section>
 
+  <section id="sync-section">
+    <h2>Sync</h2>
+    <p id="sync-state"></p>
+    <div class="row">
+      <button type="button" id="sync-signin" class="primary" hidden>Sign in with Google</button>
+      <button type="button" id="sync-now" hidden>Sync now</button>
+      <button type="button" id="sync-signout" hidden>Sign out</button>
+    </div>
+    <p class="error" id="sync-error" hidden></p>
+    <p class="hint">Sign in with the same Google account on each computer and phone, and they show the same tasks and times. The task names and times are then kept in Google Firebase for your account.</p>
+  </section>
+
   <p id="status" role="status"></p>
 
   <template id="key-row">
@@ -46,5 +58,7 @@
   <script src="keys.js"></script>
   <script src="store.js"></script>
   <script src="options.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="account.js"></script>
 </body>
 </html>

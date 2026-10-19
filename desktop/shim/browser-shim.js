@@ -11,6 +11,8 @@
 //                    it is hidden: "backgroundThrottling" is "disabled")
 //   notifications    system notifications
 //   permissions      only "notifications": a saved yes or no
+//   runtime messages the listeners in this page first; else the message goes
+//                    to the other window, and the main window always answers
 //   commands         the global shortcut that shows or hides the main window.
 //                    Saved as a Firefox shortcut in "desktopShortcut"; an empty
 //                    text means no shortcut. The start value takes no key that
@@ -162,6 +164,56 @@
     commandChanged.fire({ name, newShortcut: next, oldShortcut: old });
   }
 
+  // ---- runtime messages ----
+
+  const messageListeners = [];
+  const waiting = new Map();
+  let nextId = 0;
+  const emit = (name, payload) => window.__TAURI__.event.emit(name, payload);
+
+  // The first listener that gives an answer (not undefined), or undefined
+  function answerOf(message) {
+    for (const fn of messageListeners) {
+      const r = fn(message, { id: 'desktop' });
+      if (r !== undefined) return r;
+    }
+    return undefined;
+  }
+
+  // In Firefox, the popup and the background are two pages. Here they are
+  // one page, so a listener in this page answers first.
+  function sendMessage(message) {
+    const here = answerOf(message);
+    if (here !== undefined) return Promise.resolve(here);
+    const id = label + ':' + ++nextId;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        waiting.delete(id);
+        reject(new Error('No answer from the main window.'));
+      }, 120000);
+      waiting.set(id, { resolve, reject, timer });
+      emit('runtime-message', { id, source: label, message });
+    });
+  }
+
+  window.__TAURI__.event.listen('runtime-message', ({ payload }) => {
+    if (payload.source === label) return;
+    const answer = answerOf(payload.message);
+    if (answer === undefined && label !== 'main') return;
+    Promise.resolve(answer).then(
+      value => emit('runtime-reply', { id: payload.id, ok: true, value }),
+      e => emit('runtime-reply', { id: payload.id, ok: false, error: String(e && e.message || e) }));
+  });
+
+  window.__TAURI__.event.listen('runtime-reply', ({ payload }) => {
+    const w = waiting.get(payload.id);
+    if (!w) return;
+    waiting.delete(payload.id);
+    clearTimeout(w.timer);
+    if (payload.ok) w.resolve(payload.value);
+    else w.reject(new Error(payload.error));
+  });
+
   // ---- runtime ----
 
   const onStartup = makeEvent();
@@ -185,8 +237,8 @@
     runtime: {
       getPlatformInfo: async () => ({ os }),
       getURL: path => path,
-      sendMessage: async () => {},
-      onMessage: makeEvent(),
+      sendMessage,
+      onMessage: { addListener: fn => { messageListeners.push(fn); } },
       onStartup,
       onInstalled,
     },

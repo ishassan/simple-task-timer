@@ -1,0 +1,56 @@
+rules_version = '2';
+
+// Simple Task Timer: Firestore security rules.
+// Copyright (C) 2026 Islam Hassan
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Each signed-in user reads and writes only users/{their uid}/tasks.
+// A document there is one task, or the delete marker of a task
+// (see docs/desktop-and-sync-plan.md). All other paths are closed.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid}/tasks/{taskId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && (isTask(taskId) || isMarker());
+    }
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function isTime(v) {
+      return v is int && v >= 0;
+    }
+
+    function isTimeOrNull(v) {
+      return v == null || isTime(v);
+    }
+
+    // The fields of a task in src/tasks.js, with updatedAt for sync
+    function isTask(taskId) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['id', 'name', 'elapsedMs', 'startedAt', 'goalMs', 'goalNotified',
+                               'done', 'createdAt', 'lastRunAt', 'updatedAt'])
+        && d.keys().hasAll(['id', 'name', 'elapsedMs', 'startedAt', 'goalMs', 'goalNotified',
+                            'done', 'createdAt', 'lastRunAt', 'updatedAt'])
+        && d.id == taskId
+        && d.name is string && d.name.size() <= 200
+        && isTime(d.elapsedMs)
+        && isTimeOrNull(d.startedAt)
+        && isTimeOrNull(d.goalMs)
+        && d.goalNotified is bool
+        && d.done is bool
+        && isTime(d.createdAt)
+        && isTimeOrNull(d.lastRunAt)
+        && isTime(d.updatedAt);
+    }
+
+    // A deleted task: only the time it was deleted
+    function isMarker() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['deletedAt']) && isTime(d.deletedAt);
+    }
+  }
+}

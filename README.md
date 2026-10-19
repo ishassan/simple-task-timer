@@ -27,7 +27,23 @@ Keyboard shortcuts are for Firefox on a computer. Firefox for Android has no key
 
 The add-on asks for the notification permission only when you set a goal, and only if you click "Turn on". It works without that permission.
 
+## Sync
+
+Sign in with a Google account in **Preferences**, Sync, and the add-on and the desktop app show the same tasks on all your devices. Sign in with the same account on each device. Without sign-in, the tasks stay on the device.
+
+- A change on one device shows on the others: at once in the desktop app, and in the add-on when you open the popup (and every 5 minutes).
+- When two devices change the same task, the newer change wins. Only one task runs: if you start a task on one device, the task that runs on the other device pauses.
+- The task names and times are kept in Google Firebase (Cloud Firestore) for your account. Only your account can read them.
+
+Sync needs a Firebase project. Its values go into `src/firebase-config.js`; with no values, sync is off and Preferences says so. The steps to make the project are in `docs/desktop-and-sync-plan.md`, "Firebase project".
+
 ## Build
+
+The add-on has Firebase in it, as one script that `firebase/` makes (`src/lib/firebase.js`). Make it first:
+
+```bash
+cd firebase && npm install && npm run bundle
+```
 
 ```bash
 npx web-ext build --source-dir src
@@ -63,6 +79,14 @@ python3 ci/update_test.py
 
 `ci/android_test.py` runs the add-on in an Android emulator. GitHub Actions runs these tests (see `.github/workflows/`).
 
+Firestore rules and sync tests, with the Firebase emulators (need Java 21 or newer):
+
+```bash
+cd firebase && npm test
+```
+
+They test that each account can read and write only its own tasks, and they run two devices of one account and a device of another account against the emulators.
+
 ## Desktop app
 
 `desktop/` holds a desktop app made with [Tauri](https://tauri.app). It shows the same screen as the add-on, in its own window. It does not sync yet (see `docs/desktop-and-sync-plan.md`).
@@ -77,7 +101,7 @@ python3 ci/update_test.py
 
 How it works: `desktop/copy-web.mjs` copies the add-on files from `src/` into `desktop/web/` and adds `desktop/shim/browser-shim.js`. That script gives the add-on code the Firefox `browser` calls it uses (storage, badge, alarms, notifications, the shortcut), with the app commands in `desktop/src-tauri/src/main.rs`. The Preferences window is the add-on Preferences page, with desktop texts and a "Turn off" button for the shortcut.
 
-Build (needs Rust and Node.js):
+Build (needs Rust and Node.js, and the Firebase bundle from "Build" above):
 
 ```bash
 cd desktop && npm install

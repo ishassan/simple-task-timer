@@ -465,6 +465,8 @@ async function init() {
   }
   render();
   setInterval(tick, 1000);
+  // Get the changes from other devices (when signed in to sync)
+  browser.runtime.sendMessage({ type: 'sync-now' }).catch(() => {});
 }
 
 init();

@@ -21,7 +21,7 @@ src/tasks.js      Task rules, sync stamps and merge (no browser calls)
 src/store.js      Add-on storage (browser.storage.local)
 src/popup.*       The screen (the add-on popup, and later the desktop window)
 src/background.js Add-on badge, alarms and notification
-src/sync.js       (new) Firebase sign-in and Firestore sync, used by the add-on and the desktop app
+src/sync*.js      Firebase sign-in and Firestore sync, used by the add-on and the desktop app (see "Sync code")
 desktop/          The Tauri app: window, menu-bar timer, global shortcut, notification
 desktop/shim/     The "browser" API for the add-on scripts in the desktop app
 docs/             Plans and decisions
@@ -83,16 +83,51 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 
 ## Sign-in
 
-- **Desktop app:** Google does not let its sign-in page run inside an app web view. The app opens the Google sign-in page in the system browser, with PKCE and a redirect to `http://127.0.0.1:<port>`. The app reads the ID token and signs in to Firebase with `signInWithCredential`. This needs a Google OAuth client of the type "Desktop app".
-- **Firefox add-on:** `browser.identity.launchWebAuthFlow` opens the Google sign-in page. The redirect URL is `browser.identity.getRedirectURL()`. The add-on then signs in to Firebase with the same `signInWithCredential` call. The add-on needs the `identity` permission.
+- **Desktop app:** Google does not let its sign-in page run inside an app web view. `desktop/src-tauri/src/google.rs` opens the Google sign-in page in the system browser, with PKCE and a redirect to `http://127.0.0.1:<free port>`, and changes the code for an ID token. This needs a Google OAuth client of the type "Desktop app".
+- **Firefox add-on:** `browser.identity.launchWebAuthFlow` opens the Google sign-in page (`src/account.js`) and gets an ID token (`response_type=id_token`). This needs a Google OAuth client of the type "Web application" with this redirect URI: `https://87661a6e9e70747dfc24f6d51140fd1726dfeb61.extensions.allizom.org/`. Firefox makes this address from the SHA-1 hash of the add-on ID (`toolkit/components/extensions/child/ext-identity.js`).
+- Both send the ID token to the background (`src/sync-bg.js`), which signs in to Firebase with `signInWithCredential`. Firebase keeps the sign-in in IndexedDB.
+- With the emulator in `src/firebase-config.js`, the Preferences page uses a test token that only the Auth emulator takes.
 
-## Things to check before the build
+## Sync code
 
-- Does `browser.identity.launchWebAuthFlow` work in Firefox for Android? If it does not, Android needs another sign-in path.
-- The add-on background is an event page: Firefox stops it when it is not in use. A live Firestore listener stops with it. Plan: sync when the popup opens, listen while the popup is open, and sync on an alarm every few minutes.
-- The Firebase SDK must be in the add-on package (add-ons cannot load remote code). This adds a bundle step (esbuild) and a source upload to addons.mozilla.org.
+| File | What it does |
+|---|---|
+| `src/sync-core.js` | Documents to copies and back, and which documents to write. No Firebase. Unit tests: `tests/sync-core.test.js`. |
+| `src/sync.js` | The sync engine: sign-in, a merge run, the live listener. It gets the Firebase functions from the caller. |
+| `src/sync-bg.js` | Runs the engine in the add-on background and in the desktop main window. It answers the messages `sign-in`, `sign-out` and `sync-now`, and keeps `syncStatus` in storage. |
+| `src/account.js` | The Sync part of the Preferences page. |
+| `src/firebase-config.js` | The Firebase project and the OAuth client IDs. Empty: sync is off. |
+| `firebase/` | `firestore.rules`, the bundle step (`npm run bundle` makes `src/lib/firebase.js`) and the emulator tests (`npm test`, needs Java 21). |
+
+- A merge run saves the merged copy with `Store.saveSynced`, not with `Store.saveTasks`. `saveTasks` would give a new `updatedAt` to each task that came from the other device, and two devices would then send the same task back and forth.
+- The add-on background is an event page, which Firefox stops when it is not in use. So the add-on syncs when the popup opens (`sync-now`), after each local change, and on an alarm every 5 minutes. The live listener works while the background runs. The desktop main window always runs, so its listener always works.
+- The desktop app uses Firestore with `experimentalForceLongPolling`. With the default stream, the live listener in the app's web view (WebKit) got no changes from the emulator; with long polling, a change from another device came in less than a second. The add-on uses the default.
+- Data collection: the manifest has `"required": ["none"]` and `"optional": ["authenticationInfo", "personallyIdentifyingInfo"]`, because sync sends the Google account email and the sign-in to Firebase, and only when the user turns it on. "Sign in with Google" first asks for these with `permissions.request({ data_collection })` (Mozilla, "Firefox built-in data consent").
+- The Firebase bundle uses `firebase/auth/web-extension`, the Auth build with no remote scripts, because addons.mozilla.org does not accept remote code.
+
+## Firebase project
+
+Sync needs one Firebase project. The values go into `src/firebase-config.js`.
+
+1. Sign in to the Firebase CLI: `cd firebase && npx firebase login`.
+2. Create the project and a web app, then get the web app config: `npx firebase projects:create`, `npx firebase apps:create web`, `npx firebase apps:sdkconfig web`.
+3. Create the Firestore database (the location cannot change later) and send the rules: `npx firebase firestore:databases:create "(default)" --location <location>`, `npx firebase deploy --only firestore:rules`.
+4. In the Firebase console, Authentication, Sign-in method: turn on Google. This makes the OAuth client "Web client (auto created by Google Service)".
+5. In the Google Cloud console, APIs and Services:
+   - OAuth consent screen: user type External; add your Google account as a test user (or publish the app).
+   - Credentials, the web client: add the redirect URI of the add-on (see "Sign-in").
+   - Credentials, Create credentials, OAuth client ID, type "Desktop app": its ID and secret go into `googleDesktopClientId` and `googleDesktopSecret`.
+6. Put the web app config into `firebase`, and the web client ID into `googleWebClientId`.
+
+## Things to check before the release
+
+- Sign-in with a real Google account, on the desktop app and in the add-on (the tests use the emulator's test token).
+- Sync in the add-on with Firebase (the tests ran the same sync code in Node and in the desktop app).
+- Does `browser.identity.launchWebAuthFlow` work in Firefox for Android?
+- Does Firebase accept an ID token from the "Desktop app" client of the same project? If not, add its client ID in the Firebase console, Google provider, "Safelist client IDs from external projects".
 - The current limits of the Firebase free plan for Authentication and Firestore.
-- Privacy: the add-on manifest now says it collects no data. With sync, it sends task names and times to Firebase. The manifest `data_collection_permissions` and the addons.mozilla.org listing must say this. Sync stays off until the user signs in.
+- The addons.mozilla.org listing must say that sync sends task names, times and the Google account email to Firebase.
+- Does the new `identity` permission make Firefox ask existing users before the update?
 
 ## Steps
 

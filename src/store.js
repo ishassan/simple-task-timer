@@ -36,6 +36,18 @@
     return { before, after };
   }
 
+  // The local copy {tasks, deleted} for sync
+  async function loadCopy() {
+    const r = await browser.storage.local.get({ tasks: [], deleted: {} });
+    return { tasks: Array.isArray(r.tasks) ? r.tasks : [], deleted: r.deleted || {} };
+  }
+
+  // Saves a copy that the sync merged. The tasks keep their stamps: a new
+  // stamp here would make the change look newer than it is.
+  function saveSynced(copy) {
+    return browser.storage.local.set({ tasks: copy.tasks, deleted: copy.deleted });
+  }
+
   // Version 3.x kept its tasks as JSON in localStorage['tasks']. Adds them to
   // the list one time. The 3.x data stays where it is.
   async function importV3() {
@@ -78,5 +90,5 @@
     return browser.permissions.request(NOTIFY);
   }
 
-  root.Store = { loadTasks, saveTasks, change, importV3, loadKeys, saveKeys, promptDismissed, dismissPrompt, canNotify, askToNotify };
+  root.Store = { loadTasks, saveTasks, change, loadCopy, saveSynced, importV3, loadKeys, saveKeys, promptDismissed, dismissPrompt, canNotify, askToNotify };
 })(globalThis);

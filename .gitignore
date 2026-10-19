@@ -5,3 +5,4 @@ web-ext-artifacts/
 *.zip
 __pycache__/
 .amo-upload-uuid
+src/lib/

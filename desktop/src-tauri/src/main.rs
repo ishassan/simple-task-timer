@@ -11,10 +11,13 @@
 //   - the goal notification
 //   - a global shortcut that shows or hides the main window from any app.
 //     The page sets it (set_shortcut) from the Preferences; none at start.
+//   - Google sign-in in the system browser (google_sign_in, see google.rs)
 // The close button hides a window. Quit is in the tray menu (and Cmd+Q).
 // Preferences is in the tray menu and in the app menu (Cmd+, or Ctrl+,).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+mod google;
 
 use std::fs;
 use std::io::ErrorKind;
@@ -27,6 +30,7 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{AppHandle, Emitter, Manager, RunEvent, State, WebviewWindow, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
+use tauri_plugin_opener::OpenerExt;
 
 const TRAY: &str = "main";
 const WINDOW: &str = "main";
@@ -125,6 +129,18 @@ fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+// Signs in with Google in the system browser and gives the Google ID token
+#[tauri::command]
+async fn google_sign_in(app: AppHandle, client_id: String, client_secret: String) -> Result<String, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        google::sign_in(&client_id, &client_secret, |url| {
+            app.opener().open_url(url, None::<&str>).map_err(|e| e.to_string())
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 fn hide_window(window: WebviewWindow) -> Result<(), String> {
     window.hide().map_err(|e| e.to_string())
@@ -166,6 +182,7 @@ fn main() {
     let app = tauri::Builder::default()
         .manage(StateLock(Mutex::new(())))
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
                 .with_handler(|app, _shortcut, event| {
@@ -181,7 +198,8 @@ fn main() {
             set_shortcut,
             set_tray_title,
             notify,
-            hide_window
+            hide_window,
+            google_sign_in
         ])
         .setup(|app| {
             // The standard app menu, with Preferences after "About"

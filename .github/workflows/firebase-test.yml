@@ -1,0 +1,38 @@
+# Tests the Firestore rules and the sync (src/sync.js) with the Firebase
+# emulators: two devices of one Google account, and another account.
+name: Firebase test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'firebase/**'
+      - 'src/tasks.js'
+      - 'src/sync-core.js'
+      - 'src/sync.js'
+      - '.github/workflows/firebase-test.yml'
+
+jobs:
+  emulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # The Firestore emulator needs Java 21 or later
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install the Firebase tools
+        working-directory: firebase
+        run: npm ci
+
+      - name: Run the emulator tests
+        working-directory: firebase
+        run: npm test

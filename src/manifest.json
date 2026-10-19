@@ -4,7 +4,7 @@
   "description": "Time your tasks with one click. Pause, reset, mark done, and get an alert when a task reaches its goal.",
   "version": "4.1.0",
   "author": "Islam Hassan",
-  "permissions": ["storage", "alarms"],
+  "permissions": ["storage", "alarms", "identity"],
   "optional_permissions": ["notifications"],
   "icons": {
     "16": "icons/icon-16.png",
@@ -32,14 +32,15 @@
     }
   },
   "background": {
-    "scripts": ["tasks.js", "store.js", "background.js"]
+    "scripts": ["tasks.js", "store.js", "background.js", "lib/firebase.js", "sync-core.js", "firebase-config.js", "sync.js", "sync-bg.js"]
   },
   "browser_specific_settings": {
     "gecko": {
       "id": "{5f590989-34a7-4c7a-b219-5de25a64db43}",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
-        "required": ["none"]
+        "required": ["none"],
+        "optional": ["authenticationInfo", "personallyIdentifyingInfo"]
       }
     },
     "gecko_android": {

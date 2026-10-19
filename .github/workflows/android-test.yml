@@ -8,6 +8,8 @@ on:
   push:
     paths:
       - 'src/**'
+      - 'firebase/package*.json'
+      - 'firebase/bundle-entry.js'
       - 'ci/**'
       - '.github/workflows/android-test.yml'
 
@@ -23,6 +25,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+
+      - name: Make the Firebase bundle (src/lib/firebase.js)
+        working-directory: firebase
+        run: npm ci && npm run bundle
 
       - name: Install web-ext
         run: npm install -g web-ext@10

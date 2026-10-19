@@ -54,7 +54,7 @@ The Mac app is not notarized by Apple. The first time you open it, macOS stops i
 
 Sign in with the same Google account on each device. A change shows at once in the desktop app and the web version, and in Firefox when you open the popup. When two devices change the same task, the newer change wins.
 
-Your task names and times are kept in Google Firebase, and only your account can read them. Sync is not available in Firefox for Android, because Firefox for Android has no Google sign-in for add-ons. See the [privacy policy](https://addons.mozilla.org/firefox/addon/simple-task-timer/privacy/).
+Your task names and times are kept in Google Firebase, and only your account can read them. In Firefox for Android, the sign-in goes through the web version, because Firefox for Android has no Google sign-in for add-ons. See the [privacy policy](https://addons.mozilla.org/firefox/addon/simple-task-timer/privacy/).
 
 ## Repository
 

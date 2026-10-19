@@ -2,7 +2,7 @@
 
 The task list as a web page, for the iPhone and other browsers: [simple-task-timer-e196ff.web.app](https://simple-task-timer-e196ff.web.app). On the iPhone, open it in Safari, then Share, Add to Home Screen.
 
-- It has the same task list, buttons and goals, and the Sync part of Preferences at the bottom.
+- It has the same task list, buttons and goals. The gear button opens Settings, with the Sync part of Preferences, in place of the task list. Settings stays in the same page, because Google sign-in comes back to this address and sync runs in this page.
 - Sign in with Google to sync: the page goes to Google and comes back signed in.
 - The tasks are kept in the browser's page storage. A copy of the page files lets it open with no network.
 - There is no goal alert: a web page cannot show an alert at a set time when it is closed. The page title shows the time of the running task.
@@ -10,6 +10,8 @@ The task list as a web page, for the iPhone and other browsers: [simple-task-tim
 ## How it works
 
 `build.mjs` copies the files of [`app/`](../app) into `firebase/hosting/` and adds `web-shim.js`, which gives the app code the Firefox `browser` calls it uses, in a normal web page. The Google sign-in client (`googleWebClientId`) must have `https://simple-task-timer-e196ff.web.app/` as an authorized redirect URI.
+
+The add-on in Firefox for Android signs in through this page: when the `state` from Google is `ext.<add-on ID>.<value>`, the page does not sign in, and sends the token on to the add-on Preferences page (see [`firefox/`](../firefox)).
 
 ## Build and deploy
 

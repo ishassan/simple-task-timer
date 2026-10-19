@@ -126,6 +126,17 @@
     return Promise.reject(new Error('No answer in this page.'));
   }
 
+  // ---- Settings: the Sync part, in this page ----
+
+  // Back from Google, the address has the result: show Settings at once
+  const backFromGoogle = /[#&](id_token|error)=/.test(location.hash);
+
+  function showSettings(on) {
+    document.getElementById('settings').hidden = !on;
+    document.body.classList.toggle('settings-open', on);
+    window.scrollTo(0, 0);
+  }
+
   const onStartup = makeEvent();
   const onInstalled = makeEvent();
   const never = makeEvent();
@@ -143,6 +154,7 @@
     runtime: {
       getPlatformInfo: async () => ({ os }),
       getURL: path => new URL(path, location.href).href,
+      openOptionsPage: async () => showSettings(true),
       sendMessage,
       onMessage: { addListener: fn => { messageListeners.push(fn); } },
       onStartup,
@@ -155,6 +167,8 @@
   // background.js adds its listeners while the page loads
   document.addEventListener('DOMContentLoaded', () => {
     (firstRun ? onInstalled : onStartup).fire({ reason: 'install' });
+    document.getElementById('close-settings').addEventListener('click', () => showSettings(false));
+    if (backFromGoogle) showSettings(true);
   });
 
   if ('serviceWorker' in navigator) {

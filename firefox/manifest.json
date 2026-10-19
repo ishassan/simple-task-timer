@@ -31,6 +31,12 @@
       "description": "Open Simple Task Timer"
     }
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["options.html"],
+      "matches": ["https://simple-task-timer-e196ff.web.app/*"]
+    }
+  ],
   "background": {
     "scripts": ["tasks.js", "store.js", "background.js", "lib/firebase.js", "sync-core.js", "firebase-config.js", "sync.js", "sync-bg.js"]
   },

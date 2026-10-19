@@ -13,8 +13,16 @@ input { font-size: 16px; }
 /* A web page cannot show an alert at a set time when it is closed */
 #notify-prompt { display: none !important; }
 
-/* The Sync part of Preferences is at the bottom of this page */
-#open-prefs { display: none !important; }
+/* Settings (the gear button): the Sync part of Preferences, in place of the tasks */
+body.settings-open > :not(#settings) { display: none !important; }
+.settings-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-bar h1 { margin: 0; font-size: 17px; color: var(--text); }
 
 #sync-section {
   margin: 16px 12px;

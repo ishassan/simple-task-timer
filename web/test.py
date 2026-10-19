@@ -51,12 +51,20 @@ with sync_playwright() as p:
         pages.append(pg)
     a, bb = pages
 
+    a.wait_for_selector('#new-task', timeout=10000)
+    a.wait_for_timeout(500)
+    check('the Sync part is hidden at the start', not a.is_visible('#sync-section'))
+    check('the gear button shows', a.is_visible('#open-prefs'))
+    a.click('#open-prefs')
     a.wait_for_selector('#sync-signin:not([hidden])', timeout=10000)
-    check('sign-in button shows', True)
-    check('no gear button (the Sync part is on the page)', not a.is_visible('#open-prefs'))
+    check('the gear opens Settings with the sign-in button', True)
+    check('Settings hides the task list', not a.is_visible('#new-task'))
     a.click('#sync-signin')
     a.wait_for_function("document.getElementById('sync-state').textContent.includes('Signed in')", timeout=20000)
     check('page A signs in', True, a.text_content('#sync-state'))
+    a.click('#close-settings')
+    a.wait_for_timeout(300)
+    check('Done goes back to the tasks', a.is_visible('#new-task') and not a.is_visible('#sync-section'))
 
     a.fill('#name', 'From A')
     a.press('#name', 'Enter')
@@ -65,8 +73,10 @@ with sync_playwright() as p:
     a.wait_for_timeout(1500)
     check('page title shows the time', '·' in a.title(), a.title())
 
+    bb.click('#open-prefs')
     bb.click('#sync-signin')
     bb.wait_for_function("document.getElementById('sync-state').textContent.includes('Signed in')", timeout=20000)
+    bb.click('#close-settings')
     try:
         bb.wait_for_selector('#list .task .name:text("From A")', timeout=20000)
         check('page B gets the task from A', True)
@@ -96,6 +106,15 @@ with sync_playwright() as p:
     check('no side scroll at phone width', width <= dev['viewport']['width'], f'{width}px')
     after = [e for e in errors[before:] if not ('access control checks' in e and 'channel?' in e)]
     check('after the reload, only the stopped requests of the old page', not after, str(after[:3]))
+
+    # Back from Google (here with an error): Settings opens by itself and shows it
+    bb.goto('about:blank')  # a full page load, as from Google
+    bb.goto(URL + '#error=access_denied')
+    try:
+        bb.wait_for_selector('#sync-error:not([hidden])', timeout=10000)
+        check('back from Google, Settings opens and shows the result', bb.is_visible('#sync-error'))
+    except Exception as e:
+        check('back from Google, Settings opens and shows the result', False, str(e)[:100])
     b.close()
 
 server.shutdown()

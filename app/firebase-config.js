@@ -7,7 +7,11 @@
 // secrets: the Firestore rules protect the data. With "firebase" null,
 // sync is off and Preferences says so.
 //   firebase               the web app config from the Firebase console
-//   googleWebClientId      OAuth client "Web application" (the add-on)
+//   googleWebClientId      OAuth client "Web application" (the add-on and
+//                          the web version)
+//   webAppUrl              the web version. Firefox for Android signs in
+//                          through it: it must be an authorized redirect URI
+//                          of googleWebClientId.
 //   googleDesktopClientId  OAuth client "Desktop app" (the desktop app),
 //   googleDesktopSecret    and its secret. It is not in git: Google turns off
 //                          client secrets that it finds in public repos. The
@@ -22,6 +26,7 @@ globalThis.SYNC_CONFIG = {
     appId: '1:427469644050:web:7a93e7dbe79d94d57093cb',
   },
   googleWebClientId: '427469644050-oluiaha6cgnaace7au5p5ptucto9fka3.apps.googleusercontent.com',
+  webAppUrl: 'https://simple-task-timer-e196ff.web.app/',
   googleDesktopClientId: '427469644050-bnjvsb0khbobq9vcbeqcl8kmptive59k.apps.googleusercontent.com',
   googleDesktopSecret: '',  // the desktop build adds it from desktop/local-secrets.json
   emulator: null,

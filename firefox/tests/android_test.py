@@ -2,6 +2,9 @@
 """Load the add-on into Firefox for Android on an emulator and take screenshots.
 
 Run by .github/workflows/android-test.yml after the emulator has started.
+It also tests the Sync sign-in of Firefox for Android up to Google: the web
+version (firebase/hosting, served from this script) gets a test token in the
+URL fragment, as Google sends it, and must send it on to the add-on.
 The screenshots are for a person to look at. The script only fails when the
 add-on could not be loaded at all; other steps are best effort, and each one
 is reported as OK or MISSED at the end.
@@ -14,7 +17,10 @@ import subprocess
 import sys
 import tempfile
 import time
+import threading
 import xml.etree.ElementTree as ET
+from functools import partial
+from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 PKG = 'org.mozilla.firefox'
 DEVICE = 'emulator-5554'
@@ -23,6 +29,43 @@ OUT = 'ci-out'
 
 results = []
 shot_no = 0
+
+# The emulator reaches this computer at 10.0.2.2
+WEB_PORT = 8097
+WEB_HOST = f'http://10.0.2.2:{WEB_PORT}'
+HAND_OFF_STATE = 'a' * 32
+posted = []  # what the add-on test script sent: its UUID, and each sign-in message
+
+TEST_BG_JS = """
+browser.tabs.create({url: 'popup.html', active: false});
+// For the sign-in test: the state that the Preferences page saves when you
+// click Sign in, and a copy of each sign-in message for this script
+const post = d => fetch('%s/posted', {method: 'POST', mode: 'no-cors', body: JSON.stringify(d)});
+browser.storage.local.set({signInHandOff: {state: '%s', at: Date.now()}});
+post({uuid: new URL(browser.runtime.getURL('/')).host});
+browser.runtime.onMessage.addListener(m => {
+  if (m && m.type === 'sign-in') post(m);
+  return undefined;
+});
+""" % (WEB_HOST, HAND_OFF_STATE)
+
+
+class WebServer(SimpleHTTPRequestHandler):
+    """Serves the web version, and takes the posts of the add-on test script."""
+
+    def do_POST(self):
+        posted.append(json.loads(self.rfile.read(int(self.headers['Content-Length']))))
+        self.send_response(204)
+        self.end_headers()
+
+    def log_message(self, format, *args):
+        pass
+
+
+def start_web_server():
+    server = HTTPServer(('127.0.0.1', WEB_PORT), partial(WebServer, directory=os.path.join('firebase', 'hosting')))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    return server
 
 
 def adb(*args, check=True):
@@ -143,15 +186,18 @@ def test_copy():
 
     Firefox for Android can open the popup from its menu, but the menu
     changes between versions. The tab makes sure the test reaches the popup.
+    The copy also lets the web version on this computer open its
+    Preferences page (in place of the real web version's site).
     """
     copy = os.path.join(tempfile.mkdtemp(), 'src')
     shutil.copytree(os.path.join('firefox', 'build'), copy)
     with open(os.path.join(copy, 'test-bg.js'), 'w') as f:
-        f.write("browser.tabs.create({url: 'popup.html', active: false});\n")
+        f.write(TEST_BG_JS)
     path = os.path.join(copy, 'manifest.json')
     with open(path) as f:
         manifest = json.load(f)
     manifest['background']['scripts'].append('test-bg.js')
+    manifest['web_accessible_resources'][0]['matches'] = ['http://10.0.2.2/*']
     with open(path, 'w') as f:
         json.dump(manifest, f)
     return copy
@@ -176,6 +222,7 @@ def on_popup():
 
 def main():
     os.makedirs(OUT, exist_ok=True)
+    start_web_server()
     adb('wait-for-device')
     # Hide "<app> isn't responding" popups; the slow emulator triggers them a lot.
     adb('shell', 'settings', 'put', 'global', 'hide_error_dialogs', '1', check=False)
@@ -276,8 +323,31 @@ def main():
     time.sleep(5)
     shot('five-seconds-later')
 
+    record('The web version sent the sign-in on to the add-on', hand_off())
+
     webext.kill()
     return finish()
+
+
+def hand_off():
+    """Open the web version with a test token, as Google does after a sign-in.
+
+    The add-on test script saved the state, so the add-on must take the
+    token. Firebase then refuses the test token, and Preferences shows that.
+    """
+    uuid = next((p['uuid'] for p in posted if 'uuid' in p), None)
+    if not uuid:
+        print('the add-on test script sent no UUID')
+        return False
+    url = f'{WEB_HOST}/#state=ext.{uuid}.{HAND_OFF_STATE}&id_token=TEST-TOKEN'
+    adb('shell', 'am', 'start', '-a', 'android.intent.action.VIEW', '-d', f"'{url}'", PKG, check=False)
+    end = time.time() + 60
+    while time.time() < end and {'type': 'sign-in', 'idToken': 'TEST-TOKEN'} not in posted:
+        close_not_responding_popup()
+        time.sleep(2)
+    time.sleep(3)
+    shot('sign-in-hand-off')
+    return {'type': 'sign-in', 'idToken': 'TEST-TOKEN'} in posted
 
 
 def finish():

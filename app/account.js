@@ -6,10 +6,12 @@
 // sync now, and the state. The Google ID token comes from:
 //   - the desktop app: the app command google_sign_in (system browser)
 //   - the add-on: browser.identity.launchWebAuthFlow (a Firefox window)
+//   - the add-on in Firefox for Android, which has no launchWebAuthFlow: this
+//     page goes to Google, Google sends the token to the web version, and the
+//     web version sends it on to this page (handOffSignIn, addonReturn)
 //   - the web version: the page goes to Google, and Google sends it back to
 //     the page with the token in the URL fragment (webSignIn, webReturn)
 //   - the emulator in tests: a test token, which only the Auth emulator takes
-// Firefox for Android has no launchWebAuthFlow, so sync is not available there.
 // The token goes to the background (sync-bg.js), which signs in to Firebase.
 
 (function () {
@@ -28,10 +30,25 @@
   }
 
   const WEB_STATE = 'simple-task-timer-sign-in';
+  // The add-on sign-in through the web version: the add-on keeps
+  // {state, at} in storage.local under this key, and sends Google the state
+  // "ext.<add-on UUID>.<state>", so that the web version knows where to send
+  // the token. A sign-in older than HAND_OFF_MS is not used.
+  const HAND_OFF = 'signInHandOff';
+  const HAND_OFF_MS = 30 * 60 * 1000;
+  const ADDON_STATE = /^ext\.([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.[0-9a-f]{32}$/;
+
+  function hasWebAuthFlow() {
+    return typeof browser.identity?.launchWebAuthFlow === 'function';
+  }
 
   function canSignIn() {
     if (cfg.emulator || window.__TAURI__ || globalThis.SIMPLE_TIMER_WEB) return true;
-    return typeof browser.identity?.launchWebAuthFlow === 'function';
+    return hasWebAuthFlow() || !!cfg.webAppUrl;
+  }
+
+  function addonHost() {
+    return new URL(browser.runtime.getURL('/')).host;
   }
 
   async function googleIdToken() {
@@ -44,6 +61,7 @@
       });
     }
     if (globalThis.SIMPLE_TIMER_WEB) return webSignIn();
+    if (!hasWebAuthFlow()) return handOffSignIn();
     const url = authUrl(browser.identity.getRedirectURL(), {});
     const back = await browser.identity.launchWebAuthFlow({ url, interactive: true });
     return tokenOf(new URLSearchParams(new URL(back).hash.slice(1)));
@@ -76,16 +94,53 @@
     return new Promise(() => {});
   }
 
-  // Back from Google: the token is in the URL fragment. The "state" must be
-  // the one that this page sent, so that a link from another site cannot
-  // sign this page in to another account.
-  async function webReturn() {
-    if (!/[#&](id_token|error)=/.test(location.hash)) return;
+  // The add-on in Firefox for Android: the page goes away to Google, and
+  // comes back through the web version (addonReturn)
+  async function handOffSignIn() {
+    const state = randomText();
+    await browser.storage.local.set({ [HAND_OFF]: { state, at: Date.now() } });
+    location.assign(authUrl(cfg.webAppUrl, { state: `ext.${addonHost()}.${state}` }));
+    return new Promise(() => {});
+  }
+
+  function backFromGoogle() {
+    if (!/[#&](id_token|error)=/.test(location.hash)) return null;
     const params = new URLSearchParams(location.hash.slice(1));
     history.replaceState(null, '', location.pathname + location.search);
+    return params;
+  }
+
+  // Back from Google: the token is in the URL fragment. The "state" must be
+  // the one that this page sent, so that a link from another site cannot
+  // sign this page in to another account. A state of the add-on goes on to
+  // the add-on's Preferences page, which checks it (addonReturn). The add-on
+  // lets only this site open that page (web_accessible_resources).
+  async function webReturn() {
+    if (!/[#&](id_token|error)=/.test(location.hash)) return;
+    const addon = ADDON_STATE.exec(new URLSearchParams(location.hash.slice(1)).get('state') || '');
+    if (addon) {
+      location.replace(`moz-extension://${addon[1]}/options.html${location.hash}`);
+      // Still here: the add-on page did not open (for example, another device)
+      await new Promise(r => setTimeout(r, 3000));
+      history.replaceState(null, '', location.pathname + location.search);
+      throw new Error('This sign-in is for the Firefox add-on, but the add-on did not open. Sign in again from the add-on Preferences.');
+    }
+    const params = backFromGoogle();
     const state = localStorage.getItem(WEB_STATE);
     localStorage.removeItem(WEB_STATE);
     if (!state || params.get('state') !== state) throw new Error('This sign-in did not start on this page. Try again.');
+    await browser.runtime.sendMessage({ type: 'sign-in', idToken: tokenOf(params) });
+  }
+
+  // The add-on, back from Google through the web version
+  async function addonReturn() {
+    const params = backFromGoogle();
+    if (!params) return;
+    const saved = (await browser.storage.local.get({ [HAND_OFF]: null }))[HAND_OFF];
+    await browser.storage.local.remove(HAND_OFF);
+    const ok = saved && params.get('state') === `ext.${addonHost()}.${saved.state}` &&
+      Date.now() - saved.at < HAND_OFF_MS;
+    if (!ok) throw new Error('This sign-in did not start here, or it took too long. Try again.');
     await browser.runtime.sendMessage({ type: 'sign-in', idToken: tokenOf(params) });
   }
 
@@ -102,7 +157,7 @@
     $('sync-now').hidden = !signedIn;
     $('sync-signout').hidden = !signedIn;
     if (!can) {
-      $('sync-state').textContent = 'Sync is not available in Firefox for Android: it has no Google sign-in for add-ons. Your tasks stay on this device.';
+      $('sync-state').textContent = 'Sync is not available in this browser: it has no Google sign-in for add-ons. Your tasks stay on this device.';
     } else if (!s.available) {
       $('sync-state').textContent = 'Sync is not set up in this build.';
     } else if (!signedIn) {
@@ -149,7 +204,7 @@
     });
     $('sync-now').addEventListener('click', () => busy($('sync-now'), () => browser.runtime.sendMessage({ type: 'sync-now' })));
     $('sync-signout').addEventListener('click', () => busy($('sync-signout'), () => browser.runtime.sendMessage({ type: 'sign-out' })));
-    if (globalThis.SIMPLE_TIMER_WEB) busy($('sync-signin'), webReturn);
+    busy($('sync-signin'), globalThis.SIMPLE_TIMER_WEB ? webReturn : addonReturn);
   }
 
   init();

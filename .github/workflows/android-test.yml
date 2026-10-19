@@ -9,6 +9,7 @@ on:
     paths:
       - 'app/**'
       - 'firefox/**'
+      - 'web/**'
       - 'firebase/package*.json'
       - 'firebase/bundle-entry.js'
       - '.github/workflows/android-test.yml'
@@ -32,6 +33,9 @@ jobs:
 
       - name: Make the add-on (firefox/build)
         run: node firefox/build.mjs
+
+      - name: Make the web version (firebase/hosting)
+        run: node web/build.mjs
 
       - name: Install web-ext
         run: npm install -g web-ext@10

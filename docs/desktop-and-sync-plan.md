@@ -12,7 +12,7 @@
 | Desktop app | [Tauri](https://tauri.app) | The popup is plain HTML and JavaScript, and Tauri shows it in the system web view. The app is small. Electron also works, but its apps are much larger. |
 | Sync and sign-in | Firebase: Authentication with the Google provider, and Cloud Firestore | Google sign-in and a database in one service. Firestore sends changes to the other devices at once, and it keeps working offline. |
 | Shared logic | `src/tasks.js` stays the one file for the task rules | The add-on, the desktop app and the unit tests use the same rules. |
-| iPhone | Not in this plan | Firefox for iOS cannot run add-ons. A web version (a page you add to the home screen) can use the same sync later. |
+| iPhone | A small web version (step 7) | Firefox for iOS cannot run add-ons. A web page that you add to the home screen can use the same screen and the same sync. |
 
 ## Parts
 
@@ -145,3 +145,4 @@ These steps made the project. Use them for a new project:
 4. **Sync in the desktop app:** sign-in, first upload, live listener, merge.
 5. **Sync in the add-on:** bundle step, sign-in with `identity`, sync on popup open and on an alarm. Test on Firefox for Android.
 6. **Release:** signed macOS build, new add-on version with the privacy text.
+7. **Web version for iPhone:** the popup screen as a small web app on Firebase Hosting (`simple-task-timer-e196ff.web.app`), which you add to the iPhone home screen from Safari (Share, Add to Home Screen). It uses a browser version of the shim (storage in the page, no badge, no global shortcut), the same Firestore sync, and Google sign-in with Firebase Auth on the same domain. It needs a web app manifest and icons, and the Firebase Hosting domain in the authorized domains. To check: what a home-screen web app on iOS can do for the goal alert.

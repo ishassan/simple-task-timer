@@ -34,6 +34,8 @@ Sign in with a Google account in **Preferences**, Sync, and the add-on and the d
 - A change on one device shows on the others: at once in the desktop app, and in the add-on when you open the popup (and every 5 minutes).
 - When two devices change the same task, the newer change wins. Only one task runs: if you start a task on one device, the task that runs on the other device pauses.
 - The task names and times are kept in Google Firebase (Cloud Firestore) for your account. Only your account can read them.
+- The web version (see "Web version" below) syncs too, for example on an iPhone.
+- Sync is not available in Firefox for Android: Firefox for Android has no Google sign-in for add-ons. There, the tasks stay on the device.
 
 Sync uses the Firebase project `simple-task-timer-e196ff`; its values are in `src/firebase-config.js`. With no values there, sync is off and Preferences says so. The steps to make a project are in `docs/desktop-and-sync-plan.md`, "Firebase project".
 
@@ -87,9 +89,17 @@ cd firebase && npm test
 
 They test that each account can read and write only its own tasks, and they run two devices of one account and a device of another account against the emulators.
 
+The web version in headless WebKit, the engine of Safari on the iPhone (needs `pip install playwright` and `playwright install webkit`):
+
+```bash
+cd firebase && npx firebase emulators:exec --project demo-simple-task-timer --only auth,firestore "python3 ../ci/web_test.py"
+```
+
+It opens two iPhone-sized pages as two devices, signs both in to the emulators, and checks that a task started on one shows on the other at once.
+
 ## Desktop app
 
-`desktop/` holds a desktop app made with [Tauri](https://tauri.app). It shows the same screen as the add-on, in its own window. It does not sync yet (see `docs/desktop-and-sync-plan.md`).
+`desktop/` holds a desktop app made with [Tauri](https://tauri.app). It shows the same screen as the add-on, in its own window. It syncs with the add-on (see "Sync" above).
 
 - The window works like the popup: the same buttons, keys, Undo and goals.
 - The menu bar shows the time of the running task, like the toolbar badge. Click the menu-bar icon to show or hide the window. Its menu has Preferences and Quit.
@@ -112,6 +122,29 @@ cd desktop && npx tauri build
 ```
 
 The app goes to `desktop/src-tauri/target/release/bundle/macos/`. Use `npx tauri dev` to run it while you work on it.
+
+The app icons come from `desktop/icon.svg`. It fills the whole square, so macOS gives it the rounded shape and does not put it in a grey frame. To make them again (then remove the files that `tauri.conf.json` does not list):
+
+```bash
+cd desktop && npx tauri icon icon.svg -o src-tauri/icons
+```
+
+## Web version
+
+`webapp/` makes a small web version of the popup for the iPhone (and other browsers), at https://simple-task-timer-e196ff.web.app. On the iPhone, open it in Safari, then Share, Add to Home Screen. It opens like an app.
+
+- It has the same task list, buttons and goals as the popup, and the Sync part of Preferences at the bottom.
+- Sign in with Google there to sync with the add-on and the desktop app. The page goes to Google and comes back signed in.
+- The tasks are kept in the page storage of the browser. A copy of the page files lets it open with no network.
+- There is no goal alert: a web page cannot show an alert at a set time when it is closed. The page title shows the time of the running task.
+
+How it works: `webapp/build.mjs` copies the add-on files from `src/` into `firebase/hosting/` and adds `webapp/web-shim.js`, which gives the add-on code the Firefox `browser` calls it uses, in a normal web page. Build and put it on Firebase Hosting (needs the Firebase bundle from "Build" above, and `firebase login`):
+
+```bash
+cd firebase && npm run deploy-web
+```
+
+The Google sign-in client (`googleWebClientId`) must have `https://simple-task-timer-e196ff.web.app/` as an authorized redirect URI.
 
 ## License
 

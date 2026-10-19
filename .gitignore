@@ -6,3 +6,4 @@ web-ext-artifacts/
 __pycache__/
 .amo-upload-uuid
 src/lib/
+ci-out/

@@ -34,8 +34,9 @@
   const engine = Sync.create({
     lib: FirebaseLib, config: cfg.firebase, store: Store, emulator: cfg.emulator,
     // In the desktop app (WebKit), the live listener got no changes over the
-    // default stream; long polling works there
-    firestoreSettings: window.__TAURI__ ? { experimentalForceLongPolling: true } : {},
+    // default stream; long polling works there. The web version uses it too,
+    // because Safari on the iPhone is WebKit.
+    firestoreSettings: window.__TAURI__ || globalThis.SIMPLE_TIMER_WEB ? { experimentalForceLongPolling: true } : {},
     log: m => { if (/error/.test(m)) console.error(m); },
   });
 

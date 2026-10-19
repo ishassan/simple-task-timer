@@ -35,7 +35,7 @@ Sign in with a Google account in **Preferences**, Sync, and the add-on and the d
 - When two devices change the same task, the newer change wins. Only one task runs: if you start a task on one device, the task that runs on the other device pauses.
 - The task names and times are kept in Google Firebase (Cloud Firestore) for your account. Only your account can read them.
 
-Sync needs a Firebase project. Its values go into `src/firebase-config.js`; with no values, sync is off and Preferences says so. The steps to make the project are in `docs/desktop-and-sync-plan.md`, "Firebase project".
+Sync uses the Firebase project `simple-task-timer-e196ff`; its values are in `src/firebase-config.js`. With no values there, sync is off and Preferences says so. The steps to make a project are in `docs/desktop-and-sync-plan.md`, "Firebase project".
 
 ## Build
 
@@ -101,7 +101,7 @@ They test that each account can read and write only its own tasks, and they run 
 
 How it works: `desktop/copy-web.mjs` copies the add-on files from `src/` into `desktop/web/` and adds `desktop/shim/browser-shim.js`. That script gives the add-on code the Firefox `browser` calls it uses (storage, badge, alarms, notifications, the shortcut), with the app commands in `desktop/src-tauri/src/main.rs`. The Preferences window is the add-on Preferences page, with desktop texts and a "Turn off" button for the shortcut.
 
-Build (needs Rust and Node.js, and the Firebase bundle from "Build" above):
+Build (needs Rust and Node.js, and the Firebase bundle from "Build" above). For Google sign-in, the build also needs the desktop client secret in `desktop/local-secrets.json` (see `docs/desktop-and-sync-plan.md`, "Firebase project"):
 
 ```bash
 cd desktop && npm install

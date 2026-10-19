@@ -107,7 +107,11 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 
 ## Firebase project
 
-Sync needs one Firebase project. The values go into `src/firebase-config.js`.
+The project is `simple-task-timer-e196ff` (Spark plan, no cost), with the Firestore database `(default)` in `me-central2` (Dammam). Its values are in `src/firebase-config.js` and `firebase/.firebaserc`. The sign-in screen (Google Auth Platform) is External and "In production", so any Google account can sign in.
+
+The desktop client secret is not in git, because Google turns off client secrets that it finds in public repos. The desktop build (`desktop/copy-web.mjs`) reads it from `desktop/local-secrets.json` (`{"googleDesktopSecret": "..."}`, ignored by git) or from the `GOOGLE_DESKTOP_SECRET` environment variable. A build without it cannot sign in on the desktop. The secret is in the Google Cloud console, Clients, "Simple Task Timer desktop" (Google shows a secret only when it is made; a new one can be added there).
+
+These steps made the project. Use them for a new project:
 
 1. Sign in to the Firebase CLI: `cd firebase && npx firebase login`.
 2. Create the project and a web app, then get the web app config: `npx firebase projects:create`, `npx firebase apps:create web`, `npx firebase apps:sdkconfig web`.

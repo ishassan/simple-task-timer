@@ -64,6 +64,21 @@ writeFileSync(new URL('options.html', out), prefs);
 let options = readFileSync(new URL('options.js', src), 'utf8');
 options = insert(options, "'Firefox did not accept this shortcut: '", "'This shortcut cannot be used: '");
 writeFileSync(new URL('options.js', out), options);
+// The desktop client secret is not in git (see src/firebase-config.js). It
+// comes from desktop/local-secrets.json, or from GOOGLE_DESKTOP_SECRET.
+let secret = process.env.GOOGLE_DESKTOP_SECRET || '';
+try {
+  secret = secret || JSON.parse(readFileSync(new URL('local-secrets.json', here), 'utf8')).googleDesktopSecret || '';
+} catch (e) {
+  // No local file: the build has no secret, and desktop sign-in says so
+}
+if (secret) {
+  writeFileSync(new URL('firebase-config.js', out), readFileSync(new URL('firebase-config.js', out), 'utf8')
+    .replace("googleDesktopSecret: '',", `googleDesktopSecret: ${JSON.stringify(secret)},`));
+} else {
+  console.warn('No Google desktop client secret: desktop sign-in will not work in this build');
+}
+
 // For tests only: SYNC_EMULATOR=1 makes a build that syncs with the Firebase
 // emulators (firebase/firebase.json) and signs in with a test token
 if (process.env.SYNC_EMULATOR === '1') {

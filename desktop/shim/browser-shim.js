@@ -13,6 +13,7 @@
 //   permissions      only "notifications": a saved yes or no
 //   runtime messages the listeners in this page first; else the message goes
 //                    to the other window, and the main window always answers
+//   openOptionsPage  shows the Preferences window
 //   commands         the global shortcut that shows or hides the main window.
 //                    Saved as a Firefox shortcut in "desktopShortcut"; an empty
 //                    text means no shortcut. The start value is Alt+W
@@ -237,6 +238,7 @@
     runtime: {
       getPlatformInfo: async () => ({ os }),
       getURL: path => path,
+      openOptionsPage: () => invoke('open_prefs'),
       sendMessage,
       onMessage: { addListener: fn => { messageListeners.push(fn); } },
       onStartup,

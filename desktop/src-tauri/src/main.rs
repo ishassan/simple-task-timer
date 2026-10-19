@@ -184,6 +184,12 @@ fn show_prefs(app: &AppHandle) -> tauri::Result<()> {
     Ok(())
 }
 
+// The gear button of the main window
+#[tauri::command]
+fn open_prefs(app: AppHandle) -> Result<(), String> {
+    show_prefs(&app).map_err(|e| e.to_string())
+}
+
 fn main() {
     let app = tauri::Builder::default()
         .manage(StateLock(Mutex::new(())))
@@ -205,6 +211,7 @@ fn main() {
             set_tray_title,
             notify,
             hide_window,
+            open_prefs,
             google_sign_in
         ])
         .setup(|app| {

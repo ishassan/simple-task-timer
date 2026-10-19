@@ -103,6 +103,8 @@ input {
 
 #name { flex: 1; }
 
+#open-prefs { align-self: center; }
+
 #start {
   display: inline-flex;
   align-items: center;

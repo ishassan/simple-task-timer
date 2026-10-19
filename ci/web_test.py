@@ -53,6 +53,7 @@ with sync_playwright() as p:
 
     a.wait_for_selector('#sync-signin:not([hidden])', timeout=10000)
     check('sign-in button shows', True)
+    check('no gear button (the Sync part is on the page)', not a.is_visible('#open-prefs'))
     a.click('#sync-signin')
     a.wait_for_function("document.getElementById('sync-state').textContent.includes('Signed in')", timeout=20000)
     check('page A signs in', True, a.text_content('#sync-state'))

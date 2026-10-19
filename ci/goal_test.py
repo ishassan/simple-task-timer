@@ -294,6 +294,17 @@ HARNESS_JS = '''
     await sleep(300);
     check('Reset all keys brings back R', (await browser.storage.local.get('keys')).keys.reset === 'r');
     frame.remove();
+
+    // ---- The gear button opens Preferences ----
+    const realOpen = browser.runtime.openOptionsPage;
+    let opened = 0;
+    browser.runtime.openOptionsPage = async () => { opened++; };
+    const gear = document.getElementById('open-prefs');
+    if (gear) gear.click();
+    await sleep(100);
+    browser.runtime.openOptionsPage = realOpen;
+    check('the gear button opens Preferences', opened === 1, {gear: !!gear, opened});
+    check('the gear button has a tooltip', !!gear && gear.title === 'Preferences', gear && gear.title);
     nameField.focus();
 
     // ---- The shortcut that opens the popup also closes it from a text field ----

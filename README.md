@@ -21,7 +21,7 @@ Firefox Add-ons page: https://addons.mozilla.org/en-US/firefox/addon/simple-task
 - In the name field: **Enter** starts a new task. **Space** (with the field empty) pauses or resumes the last task. **Down arrow** goes to the list.
 - On a task: **Up** and **Down arrows** move between tasks, **Space** starts or pauses, **Enter** or **E** edits, **R** resets, **D** marks done, **Delete** deletes, **Escape** goes back to the name field. These are the start keys; you can change them.
 - **Ctrl+Z** (Cmd+Z on a Mac) undoes the last reset, done or delete while the Undo bar shows.
-- To change the keys, open **Preferences**: Firefox menu, Add-ons and themes, the "..." button of Simple Task Timer, Preferences. There you can change the shortcut that opens the popup and the keys for start or pause, edit, reset, done and delete. The tooltip of each button shows its key.
+- To change the keys, open **Preferences**: click the gear button in the popup (or Firefox menu, Add-ons and themes, the "..." button of Simple Task Timer, Preferences). There you can change the shortcut that opens the popup and the keys for start or pause, edit, reset, done and delete. The tooltip of each button shows its key.
 
 Keyboard shortcuts are for Firefox on a computer. Firefox for Android has no keyboard shortcuts for add-ons.
 
@@ -29,7 +29,7 @@ The add-on asks for the notification permission only when you set a goal, and on
 
 ## Sync
 
-Sign in with a Google account in **Preferences**, Sync, and the add-on and the desktop app show the same tasks on all your devices. Sign in with the same account on each device. Without sign-in, the tasks stay on the device.
+Sign in with a Google account in **Preferences** (the gear button in the popup), Sync, and the add-on and the desktop app show the same tasks on all your devices. Sign in with the same account on each device. Without sign-in, the tasks stay on the device.
 
 - A change on one device shows on the others: at once in the desktop app, and in the add-on when you open the popup (and every 5 minutes).
 - When two devices change the same task, the newer change wins. Only one task runs: if you start a task on one device, the task that runs on the other device pauses.
@@ -103,7 +103,7 @@ It opens two iPhone-sized pages as two devices, signs both in to the emulators, 
 
 - The window works like the popup: the same buttons, keys, Undo and goals.
 - The menu bar shows the time of the running task, like the toolbar badge. Click the menu-bar icon to show or hide the window. Its menu has Preferences and Quit.
-- A global shortcut shows or hides the window from any app. At the start it is **Alt+W** (Option+W on a Mac), as in the add-on. While the app runs, other apps do not get this key: on a Mac, Option+W then types no "∑" in any app. To change the shortcut or turn it off, open **Preferences**: Command+, (Ctrl+, on Windows and Linux), or Preferences in the menu-bar menu.
+- A global shortcut shows or hides the window from any app. At the start it is **Alt+W** (Option+W on a Mac), as in the add-on. While the app runs, other apps do not get this key: on a Mac, Option+W then types no "∑" in any app. To change the shortcut or turn it off, open **Preferences**: the gear button in the window, Command+, (Ctrl+, on Windows and Linux), or Preferences in the menu-bar menu.
 - The close button hides the window. The timer keeps counting.
 - The goal notification is a system notification. Turn it on with "Turn on" in the window, as in the add-on.
 - The tasks are saved in `state.json` in the app data folder (on macOS: `~/Library/Application Support/io.github.ishassan.simpletasktimer/`).

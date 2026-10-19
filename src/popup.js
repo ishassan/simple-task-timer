@@ -419,6 +419,11 @@ function wire() {
 
   $('undo').addEventListener('click', undo);
 
+  // Firefox closes the popup when the Preferences tab opens
+  $('open-prefs').addEventListener('click', () => {
+    browser.runtime.openOptionsPage().catch(e => console.error('No Preferences:', e));
+  });
+
   $('notify-on').addEventListener('click', () => {
     // permissions.request must run in the click, before any await
     Store.askToNotify().then(granted => {

@@ -134,6 +134,12 @@ fn notify(app: AppHandle, title: String, body: String) -> Result<(), String> {
 async fn google_sign_in(app: AppHandle, client_id: String, client_secret: String) -> Result<String, String> {
     tauri::async_runtime::spawn_blocking(move || {
         google::sign_in(&client_id, &client_secret, |url| {
+            // Debug builds only: with SIMPLE_TIMER_AUTH_URL_FILE set, write the
+            // sign-in link to that file and open no browser (for tests)
+            #[cfg(debug_assertions)]
+            if let Ok(path) = std::env::var("SIMPLE_TIMER_AUTH_URL_FILE") {
+                return std::fs::write(path, url).map_err(|e| e.to_string());
+            }
             app.opener().open_url(url, None::<&str>).map_err(|e| e.to_string())
         })
     })

@@ -87,6 +87,11 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 - **Firefox add-on:** `browser.identity.launchWebAuthFlow` opens the Google sign-in page (`src/account.js`) and gets an ID token (`response_type=id_token`). This needs a Google OAuth client of the type "Web application" with this redirect URI: `https://87661a6e9e70747dfc24f6d51140fd1726dfeb61.extensions.allizom.org/`. Firefox makes this address from the SHA-1 hash of the add-on ID (`toolkit/components/extensions/child/ext-identity.js`).
 - Both send the ID token to the background (`src/sync-bg.js`), which signs in to Firebase with `signInWithCredential`. Firebase keeps the sign-in in IndexedDB.
 - With the emulator in `src/firebase-config.js`, the Preferences page uses a test token that only the Auth emulator takes.
+- Firebase takes the ID token of the "Desktop app" client of the same project: no safelist entry is needed. (A real sign-in in the desktop app worked, and its tasks went to Firestore.)
+- The add-on sign-in works in Firefox with a real account: "Sign in with Google" asks for the optional data collection (authenticationInfo, personallyIdentifyingInfo), `launchWebAuthFlow` opens Google and closes when Google sends the browser back, and Firebase takes the web client's ID token. A task started in the add-on went to Firestore, a task written to Firestore came into the add-on when the popup opened (the add-on's running task paused), and deletes went to Firestore as delete markers.
+- Google does not let a browser under WebDriver control sign in ("This browser or app may not be secure"). A test profile that was signed in to Google without WebDriver keeps the session, and the account chooser then works under WebDriver.
+- On the add-on's Google page, the account chooser says "continue to allizom.org" (the domain of the Firefox redirect address), not the app name.
+- Debug builds of the desktop app only: with `SIMPLE_TIMER_AUTH_URL_FILE` set, the app writes the Google sign-in link to that file and opens no browser, so a test can open it in another browser.
 
 ## Sync code
 
@@ -125,10 +130,9 @@ These steps made the project. Use them for a new project:
 
 ## Things to check before the release
 
-- Sign-in with a real Google account, on the desktop app and in the add-on (the tests use the emulator's test token).
-- Sync in the add-on with Firebase (the tests ran the same sync code in Node and in the desktop app).
 - Does `browser.identity.launchWebAuthFlow` work in Firefox for Android?
-- Does Firebase accept an ID token from the "Desktop app" client of the same project? If not, add its client ID in the Firebase console, Google provider, "Safelist client IDs from external projects".
+- The desktop global shortcut (Control+Option+W) with a real key press. A test tool cannot press it: macOS drops key events from a process that has no Accessibility permission.
+- The desktop goal notification banner after "Allow". The app sends it (the notify command returns success), and macOS then asks once whether "Simple Task Timer" may send notifications. Until the user clicks Allow, no alert shows. The notification plugin uses `NSUserNotificationCenter` (deprecated since macOS 11).
 - The current limits of the Firebase free plan for Authentication and Firestore.
 - The addons.mozilla.org listing must say that sync sends task names, times and the Google account email to Firebase.
 - Does the new `identity` permission make Firefox ask existing users before the update?

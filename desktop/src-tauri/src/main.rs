@@ -12,7 +12,11 @@
 //   - a global shortcut that shows or hides the main window from any app.
 //     The page sets it (set_shortcut) from the Preferences; none at start.
 //   - Google sign-in in the system browser (google_sign_in, see google.rs)
-// The close button hides a window. Quit is in the tray menu (and Cmd+Q).
+// The close button hides a window. On macOS, the last window on screen does
+// not hide: the app hides (as Cmd+H does), so the app you were in before
+// comes back to the front. This lets the goal notification show as a banner
+// (macOS shows no banner for the app in front), and a click on the banner
+// shows the app again with its window. Quit is in the tray menu (and Cmd+Q).
 // Preferences is in the tray menu and in the app menu (Cmd+, or Ctrl+,).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -27,7 +31,7 @@ use std::sync::Mutex;
 use serde_json::{json, Map, Value};
 use tauri::menu::{Menu, MenuItem, MenuItemKind, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Emitter, Manager, RunEvent, State, WebviewWindow, WindowEvent};
+use tauri::{AppHandle, Emitter, Manager, RunEvent, Runtime, State, WebviewWindow, Window, WindowEvent};
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, Shortcut, ShortcutState};
 use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_opener::OpenerExt;
@@ -148,12 +152,31 @@ async fn google_sign_in(app: AppHandle, client_id: String, client_secret: String
 }
 
 #[tauri::command]
-fn hide_window(window: WebviewWindow) -> Result<(), String> {
-    window.hide().map_err(|e| e.to_string())
+fn hide_window(window: Window) -> Result<(), String> {
+    hide(&window).map_err(|e| e.to_string())
+}
+
+// Hides a window. On macOS, hides the app in its place when no other window
+// is on screen
+fn hide<R: Runtime>(window: &Window<R>) -> tauri::Result<()> {
+    #[cfg(target_os = "macos")]
+    {
+        let app = window.app_handle();
+        let others = app
+            .webview_windows()
+            .values()
+            .any(|w| w.label() != window.label() && w.is_visible().unwrap_or(false));
+        if !others {
+            return app.hide();
+        }
+    }
+    window.hide()
 }
 
 // Shows the window and tells the page, which puts the cursor in the name field
 fn show_window(app: &AppHandle) {
+    #[cfg(target_os = "macos")]
+    let _ = app.show();
     if let Some(window) = app.get_webview_window(WINDOW) {
         let _ = window.unminimize();
         let _ = window.show();
@@ -166,7 +189,7 @@ fn toggle_window(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(WINDOW) {
         let open = window.is_visible().unwrap_or(false) && window.is_focused().unwrap_or(false);
         if open {
-            let _ = window.hide();
+            let _ = hide(&window.as_ref().window());
         } else {
             show_window(app);
         }
@@ -176,6 +199,8 @@ fn toggle_window(app: &AppHandle) {
 // Shows the Preferences window. The app makes it hidden at start
 // (tauri.conf.json): a window made later from a menu stayed empty on macOS.
 fn show_prefs(app: &AppHandle) -> tauri::Result<()> {
+    #[cfg(target_os = "macos")]
+    app.show()?;
     if let Some(window) = app.get_webview_window(PREFS) {
         window.unminimize()?;
         window.show()?;
@@ -263,7 +288,7 @@ fn main() {
             // The windows hide, so the timers of the main window keep running
             if let WindowEvent::CloseRequested { api, .. } = event {
                 api.prevent_close();
-                let _ = window.hide();
+                let _ = hide(window);
             }
         })
         .build(tauri::generate_context!())

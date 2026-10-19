@@ -42,7 +42,7 @@ Each platform gives the screen the same small set of functions:
 - The desktop window runs the add-on scripts without changes: `popup.js` and `background.js` in one page. `desktop/shim/browser-shim.js` gives them the `browser` calls they use. So a change to the add-on screen also changes the desktop app.
 - The window keeps its timers when it is hidden: the window setting `backgroundThrottling` is `"disabled"`. Tauri supports this setting on macOS 14 and later, not on Windows and Linux. On Windows and Linux, the menu-bar time and the goal alarm can be late while the window is hidden.
 - The close button hides the window, so the timer keeps running. Quit is in the tray menu.
-- The shortcut is global, so it takes its key from all apps while the desktop app runs. For this reason its start value is Control+Option+W on a Mac (Ctrl+Alt+W on Windows and Linux), a key that types no character, and not Alt+W as in the add-on (Option+W types "∑"). Preferences can change it or turn it off. It is saved as a Firefox shortcut text in `desktopShortcut`, so the Preferences page of the add-on works without changes.
+- The shortcut is global, so it takes its key from all apps while the desktop app runs. Its start value is Alt+W (Option+W on a Mac), as in the add-on: the user chose the same key as in Firefox, and accepts that Option+W then types no "∑" in any app while the desktop app runs. Preferences can change it or turn it off. It is saved as a Firefox shortcut text in `desktopShortcut`, so the Preferences page of the add-on works without changes.
 - The Preferences window is made hidden at start and shown from the menu. A window that the app made later from a menu stayed empty on macOS. Both windows have `backgroundThrottling` `"disabled"`: with the default, the Preferences page stayed empty when the window was behind other windows.
 - The two windows share `state.json`. The app writes only the keys that a window changes, and sends each change to the other window (`storage-changed`), so one window does not overwrite the changes of the other.
 
@@ -91,6 +91,7 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 - The add-on sign-in works in Firefox with a real account: "Sign in with Google" asks for the optional data collection (authenticationInfo, personallyIdentifyingInfo), `launchWebAuthFlow` opens Google and closes when Google sends the browser back, and Firebase takes the web client's ID token. A task started in the add-on went to Firestore, a task written to Firestore came into the add-on when the popup opened (the add-on's running task paused), and deletes went to Firestore as delete markers.
 - Google does not let a browser under WebDriver control sign in ("This browser or app may not be secure"). A test profile that was signed in to Google without WebDriver keeps the session, and the account chooser then works under WebDriver.
 - On the add-on's Google page, the account chooser says "continue to allizom.org" (the domain of the Firefox redirect address), not the app name.
+- The global shortcut Option+W shows and hides the window (tested with a real key press). A test tool cannot press a global shortcut: macOS drops key events from a process that has no Accessibility permission.
 - Debug builds of the desktop app only: with `SIMPLE_TIMER_AUTH_URL_FILE` set, the app writes the Google sign-in link to that file and opens no browser, so a test can open it in another browser.
 
 ## Sync code
@@ -131,7 +132,6 @@ These steps made the project. Use them for a new project:
 ## Things to check before the release
 
 - Does `browser.identity.launchWebAuthFlow` work in Firefox for Android?
-- The desktop global shortcut (Control+Option+W) with a real key press. A test tool cannot press it: macOS drops key events from a process that has no Accessibility permission.
 - The desktop goal notification banner after "Allow". The app sends it (the notify command returns success), and macOS then asks once whether "Simple Task Timer" may send notifications. Until the user clicks Allow, no alert shows. The notification plugin uses `NSUserNotificationCenter` (deprecated since macOS 11).
 - The current limits of the Firebase free plan for Authentication and Firestore.
 - The addons.mozilla.org listing must say that sync sends task names, times and the Google account email to Firebase.

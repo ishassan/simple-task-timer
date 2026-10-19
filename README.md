@@ -93,7 +93,7 @@ They test that each account can read and write only its own tasks, and they run 
 
 - The window works like the popup: the same buttons, keys, Undo and goals.
 - The menu bar shows the time of the running task, like the toolbar badge. Click the menu-bar icon to show or hide the window. Its menu has Preferences and Quit.
-- A global shortcut shows or hides the window from any app. At the start it is **Control+Option+W** on a Mac (Ctrl+Alt+W on Windows and Linux). This key types no character, so it does not take a letter from other apps. While the app runs, other apps do not get this key. To change the shortcut or turn it off, open **Preferences**: Command+, (Ctrl+, on Windows and Linux), or Preferences in the menu-bar menu.
+- A global shortcut shows or hides the window from any app. At the start it is **Alt+W** (Option+W on a Mac), as in the add-on. While the app runs, other apps do not get this key: on a Mac, Option+W then types no "∑" in any app. To change the shortcut or turn it off, open **Preferences**: Command+, (Ctrl+, on Windows and Linux), or Preferences in the menu-bar menu.
 - The close button hides the window. The timer keeps counting.
 - The goal notification is a system notification. Turn it on with "Turn on" in the window, as in the add-on.
 - The tasks are saved in `state.json` in the app data folder (on macOS: `~/Library/Application Support/io.github.ishassan.simpletasktimer/`).

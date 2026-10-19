@@ -15,8 +15,8 @@
 //                    to the other window, and the main window always answers
 //   commands         the global shortcut that shows or hides the main window.
 //                    Saved as a Firefox shortcut in "desktopShortcut"; an empty
-//                    text means no shortcut. The start value takes no key that
-//                    types a character: Control+Option+W on a Mac.
+//                    text means no shortcut. The start value is Alt+W
+//                    (Option+W on a Mac), as in the add-on.
 // window.close() hides the window.
 
 (function () {
@@ -29,7 +29,7 @@
   const OPEN = '_execute_action';
   const os = /Mac/.test(navigator.userAgent) ? 'mac' : /Win/.test(navigator.userAgent) ? 'win' : 'linux';
   const isMac = os === 'mac';
-  const DEFAULT_SHORTCUT = isMac ? 'MacCtrl+Alt+W' : 'Ctrl+Alt+W';
+  const DEFAULT_SHORTCUT = 'Alt+W';
 
   function makeEvent() {
     const fns = [];

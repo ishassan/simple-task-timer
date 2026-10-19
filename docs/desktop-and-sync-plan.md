@@ -141,9 +141,12 @@ These steps made the project. Use them for a new project:
 
 - Does `browser.identity.launchWebAuthFlow` work in Firefox for Android? No: Firefox for Android has no `identity.launchWebAuthFlow` and no `getRedirectURL` (MDN browser compatibility data, `webextensions/api/identity.json`). Decision: on Android, the sign-in goes through the web version on Firebase Hosting. Preferences goes to Google with the web version as the redirect URI (it is already an authorized redirect URI of the web client), and with the state `ext.<add-on ID>.<random value>`. The web version sees that state and opens the add-on Preferences page with the token in the URL fragment. Preferences checks the state against the value it saved in `storage.local` (used once, at most 30 minutes old). Only the web version's site can open that page (`web_accessible_resources`), so the add-on needs no new permission. Tested in headless Firefox (`firefox/tests/hand_off_test.py`) and in the Android emulator test.
 - The desktop goal notification banner after "Allow". The app sends it (the notify command returns success), and macOS then asks once whether "Simple Task Timer" may send notifications. Until the user clicks Allow, no alert shows. The notification plugin uses `NSUserNotificationCenter` (deprecated since macOS 11).
-- The current limits of the Firebase free plan for Authentication and Firestore.
+- The limits of the Firebase free plan (Spark), from the Firebase docs (October 2026):
+  - Firestore ("Usage and limits"): 1 GiB stored data, 50,000 document reads, 20,000 writes and 20,000 deletes per day (reset at about midnight Pacific time), and 10 GiB outbound data per month.
+  - Authentication ("Limits"), with Identity Platform on the Spark plan: 3,000 Tier 1 daily active users. Google sign-in is a social provider, so it is Tier 1 (Identity Platform pricing). New accounts: 100 an hour from each IP address.
+  - Hosting ("Usage, quotas, and pricing"): 10 GB stored and 10 GB data transfer a month. After 10 GB of transfer, Firebase disables the sites until the next month.
 - The addons.mozilla.org listing must say that sync sends task names, times and the Google account email to Firebase. Done in 4.2.0: the listing has a Sync and a Private item, and the add-on has a privacy policy.
-- Does the new `identity` permission make Firefox ask existing users before the update?
+- Does the new `identity` permission make Firefox ask existing users before the update? No. Mozilla's guide "Request the right permissions" (Extension Workshop) lists `identity` with the permissions that "don't get alerted to users". The guide says that Firefox asks before an update that needs more permissions; a permission with no message gives it nothing to show (the guide does not state this case on its own). The `web_accessible_resources` entry of 4.3.0 is not a permission.
 
 ## Steps
 

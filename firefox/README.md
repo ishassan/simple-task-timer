@@ -43,3 +43,4 @@ node web/build.mjs && python3 firefox/tests/hand_off_test.py
 - `hand_off_test.py`: the sign-in of Firefox for Android after Google. The web version gets a test token and sends it on to the add-on. A token with another state, the same state a second time, and a page on another site are refused.
 - `android_test.py`: runs the add-on in an Android emulator (GitHub Actions only), with the same sign-in step as `hand_off_test.py`.
 - `amo_screenshots.py`: makes the AMO screenshots in `screenshots/` (also needs `pip install pillow`).
+- `android_screenshot.py`: makes `screenshots/6-android.png` from two screenshots of the Android test (the menu, and the add-on page).

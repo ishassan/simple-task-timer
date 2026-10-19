@@ -76,3 +76,13 @@ test('matchesShortcut finds the shortcut that opens the popup', () => {
   assert.equal(K.matchesShortcut(ev('∑', 'KeyW', { altKey: true }), '', true), false);
   assert.equal(K.matchesShortcut(ev('∑', 'KeyW', { altKey: true }), undefined, true), false);
 });
+
+test('toAccelerator gives the desktop app shortcut for a Firefox shortcut', () => {
+  assert.equal(K.toAccelerator('Alt+W', true), 'Alt+W');
+  assert.equal(K.toAccelerator('MacCtrl+Alt+W', true), 'Control+Alt+W');
+  assert.equal(K.toAccelerator('Command+Shift+Up', true), 'Super+Shift+Up');
+  assert.equal(K.toAccelerator('Ctrl+Shift+5', true), 'Super+Shift+5');
+  assert.equal(K.toAccelerator('Ctrl+Alt+W', false), 'Control+Alt+W');
+  assert.equal(K.toAccelerator('F9', false), 'F9');
+  assert.equal(K.toAccelerator('', true), '');
+});

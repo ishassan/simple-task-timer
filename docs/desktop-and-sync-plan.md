@@ -22,7 +22,8 @@ src/store.js      Add-on storage (browser.storage.local)
 src/popup.*       The screen (the add-on popup, and later the desktop window)
 src/background.js Add-on badge, alarms and notification
 src/sync.js       (new) Firebase sign-in and Firestore sync, used by the add-on and the desktop app
-desktop/          (new) The Tauri app: window, menu-bar timer, global shortcut, notification
+desktop/          The Tauri app: window, menu-bar timer, global shortcut, notification
+desktop/shim/     The "browser" API for the add-on scripts in the desktop app
 docs/             Plans and decisions
 ```
 
@@ -30,11 +31,20 @@ Each platform gives the screen the same small set of functions:
 
 | Function | Firefox add-on | Desktop app (Tauri) |
 |---|---|---|
-| Save and read tasks | `browser.storage.local` | Tauri store plugin (a JSON file in the app data folder) |
+| Save and read tasks | `browser.storage.local` | `state.json` in the app data folder (app commands `load_state`, `save_state`) |
 | Running time outside the window | Toolbar badge | Menu-bar (tray) title, for example "25m" |
-| Goal alarm | `browser.alarms` and `browser.notifications` | A timer in the app and the notification plugin |
-| Open shortcut | `commands` in the manifest (Alt+W) | Global shortcut plugin |
+| Goal alarm | `browser.alarms` and `browser.notifications` | Timers in the page and the notification plugin |
+| Open shortcut | `commands` in the manifest (Alt+W) | Global shortcut plugin, set on the Preferences page |
 | Sign-in | `browser.identity.launchWebAuthFlow` | The system browser, with a redirect to a local port |
+
+### Desktop app decisions
+
+- The desktop window runs the add-on scripts without changes: `popup.js` and `background.js` in one page. `desktop/shim/browser-shim.js` gives them the `browser` calls they use. So a change to the add-on screen also changes the desktop app.
+- The window keeps its timers when it is hidden: the window setting `backgroundThrottling` is `"disabled"`. Tauri supports this setting on macOS 14 and later, not on Windows and Linux. On Windows and Linux, the menu-bar time and the goal alarm can be late while the window is hidden.
+- The close button hides the window, so the timer keeps running. Quit is in the tray menu.
+- The shortcut is global, so it takes its key from all apps while the desktop app runs. For this reason its start value is Control+Option+W on a Mac (Ctrl+Alt+W on Windows and Linux), a key that types no character, and not Alt+W as in the add-on (Option+W types "∑"). Preferences can change it or turn it off. It is saved as a Firefox shortcut text in `desktopShortcut`, so the Preferences page of the add-on works without changes.
+- The Preferences window is made hidden at start and shown from the menu. A window that the app made later from a menu stayed empty on macOS. Both windows have `backgroundThrottling` `"disabled"`: with the default, the Preferences page stayed empty when the window was behind other windows.
+- The two windows share `state.json`. The app writes only the keys that a window changes, and sends each change to the other window (`storage-changed`), so one window does not overwrite the changes of the other.
 
 ## Sync data
 

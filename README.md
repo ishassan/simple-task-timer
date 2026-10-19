@@ -63,6 +63,32 @@ python3 ci/update_test.py
 
 `ci/android_test.py` runs the add-on in an Android emulator. GitHub Actions runs these tests (see `.github/workflows/`).
 
+## Desktop app
+
+`desktop/` holds a desktop app made with [Tauri](https://tauri.app). It shows the same screen as the add-on, in its own window. It does not sync yet (see `docs/desktop-and-sync-plan.md`).
+
+- The window works like the popup: the same buttons, keys, Undo and goals.
+- The menu bar shows the time of the running task, like the toolbar badge. Click the menu-bar icon to show or hide the window. Its menu has Preferences and Quit.
+- A global shortcut shows or hides the window from any app. At the start it is **Control+Option+W** on a Mac (Ctrl+Alt+W on Windows and Linux). This key types no character, so it does not take a letter from other apps. While the app runs, other apps do not get this key. To change the shortcut or turn it off, open **Preferences**: Command+, (Ctrl+, on Windows and Linux), or Preferences in the menu-bar menu.
+- The close button hides the window. The timer keeps counting.
+- The goal notification is a system notification. Turn it on with "Turn on" in the window, as in the add-on.
+- The tasks are saved in `state.json` in the app data folder (on macOS: `~/Library/Application Support/io.github.ishassan.simpletasktimer/`).
+- Preferences has the same keys for the task rows as the add-on.
+
+How it works: `desktop/copy-web.mjs` copies the add-on files from `src/` into `desktop/web/` and adds `desktop/shim/browser-shim.js`. That script gives the add-on code the Firefox `browser` calls it uses (storage, badge, alarms, notifications, the shortcut), with the app commands in `desktop/src-tauri/src/main.rs`. The Preferences window is the add-on Preferences page, with desktop texts and a "Turn off" button for the shortcut.
+
+Build (needs Rust and Node.js):
+
+```bash
+cd desktop && npm install
+```
+
+```bash
+cd desktop && npx tauri build
+```
+
+The app goes to `desktop/src-tauri/target/release/bundle/macos/`. Use `npx tauri dev` to run it while you work on it.
+
 ## License
 
 Copyright (C) 2026 Islam Hassan

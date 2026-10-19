@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Simple Task Timer",
+  "version": "0.1.0",
+  "identifier": "io.github.ishassan.simpletasktimer",
+  "build": {
+    "frontendDist": "../web",
+    "beforeDevCommand": "node copy-web.mjs",
+    "beforeBuildCommand": "node copy-web.mjs"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Simple Task Timer",
+        "width": 400,
+        "height": 560,
+        "minWidth": 320,
+        "minHeight": 300,
+        "backgroundThrottling": "disabled"
+      },
+      {
+        "label": "prefs",
+        "url": "options.html",
+        "title": "Simple Task Timer Preferences",
+        "width": 480,
+        "height": 620,
+        "visible": false,
+        "backgroundThrottling": "disabled"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app"
+    ],
+    "category": "Productivity",
+    "copyright": "Copyright (C) 2026 Islam Hassan",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

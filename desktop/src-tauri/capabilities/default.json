@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main and Preferences windows can call the app commands and listen for app events",
+  "windows": ["main", "prefs"],
+  "permissions": ["core:default"]
+}

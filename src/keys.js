@@ -139,9 +139,18 @@
     return shortcut.split('+').map(p => (isMac && mac[p] ? mac[p] : p)).join('+');
   }
 
+  // The desktop app shortcut (a Tauri accelerator) for a Firefox shortcut:
+  // "MacCtrl+Alt+W" gives "Control+Alt+W". The key names are the same.
+  // On a Mac, "Ctrl" in a Firefox shortcut is the Command key ("Super").
+  function toAccelerator(shortcut, isMac) {
+    if (!shortcut) return '';
+    const mods = { Alt: 'Alt', Shift: 'Shift', MacCtrl: 'Control', Command: 'Super', Ctrl: isMac ? 'Super' : 'Control' };
+    return shortcut.split('+').map(p => mods[p] || p).join('+');
+  }
+
   const api = {
     DEFAULT_KEYS, ACTIONS, FIXED, keyOf, keyLabel, keyHint, withDefaults, actionFor, checkKey,
-    shortcutKey, shortcutFromEvent, matchesShortcut, shortcutLabel,
+    shortcutKey, shortcutFromEvent, matchesShortcut, shortcutLabel, toAccelerator,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

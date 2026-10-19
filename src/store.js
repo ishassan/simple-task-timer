@@ -5,7 +5,8 @@
 // Storage and permission helpers for the popup and the background script.
 // storage.local keys: tasks (the task list), notifyPromptDismissed (true
 // after "Not now" on the notification question), v3Imported (true after the
-// 3.x tasks were added to the list), keys (the row keys from Preferences).
+// 3.x tasks were added to the list), keys (the row keys from Preferences),
+// deleted (the delete markers for sync, {taskId: deletedAt}).
 
 (function (root) {
   'use strict';
@@ -17,16 +18,21 @@
     return Array.isArray(r.tasks) ? r.tasks : [];
   }
 
-  function saveTasks(tasks) {
-    return browser.storage.local.set({ tasks });
+  // Saves the list with the sync stamps and the delete markers (see
+  // Tasks.stamp). Returns the saved list.
+  async function saveTasks(tasks) {
+    const r = await browser.storage.local.get({ tasks: [], deleted: {} });
+    const prev = Array.isArray(r.tasks) ? r.tasks : [];
+    const saved = Tasks.stamp(prev, tasks, r.deleted || {}, Date.now());
+    await browser.storage.local.set(saved);
+    return saved.tasks;
   }
 
   // Reads the newest list, applies fn(list, now), and saves the result.
-  // Returns the list from before the change (for Undo) and the new list.
+  // Returns the list from before the change (for Undo) and the saved list.
   async function change(fn) {
     const before = await loadTasks();
-    const after = fn(before, Date.now());
-    await saveTasks(after);
+    const after = await saveTasks(fn(before, Date.now()));
     return { before, after };
   }
 

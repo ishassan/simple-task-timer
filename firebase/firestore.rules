@@ -2,7 +2,7 @@ rules_version = '2';
 
 // Simple Task Timer: Firestore security rules.
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
 // Each signed-in user reads and writes only users/{their uid}/tasks.
 // A document there is one task, or the delete marker of a task
@@ -30,7 +30,7 @@ service cloud.firestore {
       return v == null || isTime(v);
     }
 
-    // The fields of a task in src/tasks.js, with updatedAt for sync
+    // The fields of a task in app/tasks.js, with updatedAt for sync
     function isTask(taskId) {
       let d = request.resource.data;
       return d.keys().hasOnly(['id', 'name', 'elapsedMs', 'startedAt', 'goalMs', 'goalNotified',

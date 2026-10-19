@@ -1,6 +1,6 @@
 // Simple Task Timer
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
 // Desktop app: gives the add-on scripts the part of the Firefox "browser" API
 // that they use, with the app commands in src-tauri/src/main.rs.

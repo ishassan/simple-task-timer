@@ -1,0 +1,278 @@
+/* Simple Task Timer. Copyright (C) 2026 Islam Hassan. SPDX-License-Identifier: GPL-3.0-only */
+
+:root {
+  --bg: #ffffff;
+  --surface: #f4f3fa;
+  --text: #1d1b2b;
+  --muted: #6b6880;
+  --line: #e3e1ee;
+  --accent: #534ab7;
+  --accent-text: #ffffff;
+  --accent-soft: #eeedfe;
+  --reached: #3b6d11;
+  --reached-soft: #eaf3de;
+  --danger: #a32d2d;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1b22;
+    --surface: #26252e;
+    --text: #f1f0f7;
+    --muted: #a3a0b6;
+    --line: #3a3846;
+    --accent: #8f87ea;
+    --accent-text: #15122e;
+    --accent-soft: #2e2a52;
+    --reached: #97c459;
+    --reached-soft: #253318;
+    --danger: #f09595;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body { width: 380px; }
+
+/* Firefox for Android opens the popup as a full page */
+@media (pointer: coarse) {
+  body { width: auto; }
+}
+.android body { width: auto; }
+
+[hidden] { display: none !important; }
+
+.sprite { position: absolute; }
+
+button {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+button:hover { background: var(--surface); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+button.primary:hover { filter: brightness(1.08); }
+
+button.link {
+  border: none;
+  min-height: 0;
+  padding: 2px 4px;
+  color: var(--accent);
+}
+
+input {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  height: 34px;
+  padding: 0 10px;
+  min-width: 0;
+}
+
+.i { width: 18px; height: 18px; flex: none; }
+
+#new-task {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+#name { flex: 1; }
+
+#open-prefs { align-self: center; }
+
+#start {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 14px 0 10px;
+}
+
+#notify-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--accent-soft);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+
+#notify-prompt .actions { display: flex; gap: 6px; margin-left: auto; }
+
+#empty {
+  margin: 0;
+  padding: 18px 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+ul { list-style: none; margin: 0; padding: 0; }
+
+.task { border-bottom: 1px solid var(--line); }
+.task:focus { outline: none; }
+.task:focus-visible { box-shadow: inset 3px 0 0 var(--accent); }
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 6px 6px 10px;
+  cursor: pointer;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.time {
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+button.icon {
+  width: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+button.icon:hover { color: var(--text); }
+button.icon.toggle { color: var(--accent); }
+button.icon.delete:hover { color: var(--danger); }
+
+@media (pointer: coarse) {
+  button, input { min-height: 40px; }
+  button.icon { width: 40px; }
+}
+.android button, .android input { min-height: 40px; }
+.android button.icon { width: 40px; }
+
+.task.running { background: var(--accent-soft); }
+.task.running .name { font-weight: 600; }
+.task.running .time { color: var(--accent); }
+.task.reached .time { color: var(--reached); }
+
+.goal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.fill { height: 100%; width: 0; background: var(--accent); }
+.task.reached .fill { background: var(--reached); }
+.task.reached .goal-text { color: var(--reached); }
+
+.edit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  padding: 4px 10px 10px;
+}
+
+.edit label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.edit label:first-child { grid-column: 1 / -1; }
+.edit input { color: var(--text); width: 100%; }
+
+.chips {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chips button { min-height: 28px; padding: 0 8px; font-size: 12px; }
+.chips .save { margin-left: auto; }
+
+.error {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  color: var(--danger);
+}
+
+#done-group summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  color: var(--muted);
+  cursor: pointer;
+  list-style: none;
+}
+
+#done-group summary::-webkit-details-marker { display: none; }
+#done-group summary::before { content: "▸"; margin-right: 6px; }
+#done-group[open] summary::before { content: "▾"; }
+#done-title { flex: 1; }
+
+.task.is-done .name { color: var(--muted); text-decoration: line-through; }
+
+#toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+
+#toast-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

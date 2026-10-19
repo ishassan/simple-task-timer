@@ -1,9 +1,9 @@
-// Unit tests for src/keys.js. Run: node --test
+// Unit tests for app/keys.js. Run: node --test
 'use strict';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const K = require('../src/keys.js');
+const K = require('../app/keys.js');
 
 const ev = (key, code, mods) => Object.assign({ key, code, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false }, mods || {});
 

@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'src/**'
+      - 'app/**'
+      - 'firefox/**'
       - 'firebase/package*.json'
       - 'firebase/bundle-entry.js'
-      - 'ci/**'
       - '.github/workflows/android-test.yml'
 
 jobs:
@@ -26,9 +26,12 @@ jobs:
         with:
           node-version: 22
 
-      - name: Make the Firebase bundle (src/lib/firebase.js)
+      - name: Make the Firebase bundle (app/lib/firebase.js)
         working-directory: firebase
         run: npm ci && npm run bundle
+
+      - name: Make the add-on (firefox/build)
+        run: node firefox/build.mjs
 
       - name: Install web-ext
         run: npm install -g web-ext@10
@@ -54,7 +57,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: python3 ci/android_test.py
+          script: python3 firefox/tests/android_test.py
 
       - name: Upload screenshots
         if: always()

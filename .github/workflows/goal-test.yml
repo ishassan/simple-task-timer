@@ -7,12 +7,11 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'src/**'
+      - 'app/**'
+      - 'firefox/**'
       - 'firebase/package*.json'
       - 'firebase/bundle-entry.js'
       - 'tests/**'
-      - 'ci/goal_test.py'
-      - 'ci/update_test.py'
       - '.github/workflows/goal-test.yml'
 
 jobs:
@@ -28,9 +27,12 @@ jobs:
         with:
           node-version: 22
 
-      - name: Make the Firebase bundle (src/lib/firebase.js)
+      - name: Make the Firebase bundle (app/lib/firebase.js)
         working-directory: firebase
         run: npm ci && npm run bundle
+
+      - name: Make the add-on (firefox/build)
+        run: node firefox/build.mjs
 
       - name: Run the unit tests
         run: node --test
@@ -49,9 +51,9 @@ jobs:
       - name: Run the test
         env:
           FIREFOX_BIN: ${{ steps.firefox.outputs.firefox-path }}
-        run: python3 ci/goal_test.py
+        run: python3 firefox/tests/goal_test.py
 
       - name: Run the update test
         env:
           FIREFOX_BIN: ${{ steps.firefox.outputs.firefox-path }}
-        run: python3 ci/update_test.py
+        run: python3 firefox/tests/update_test.py

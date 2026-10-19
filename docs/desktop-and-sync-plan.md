@@ -11,7 +11,7 @@
 |---|---|---|
 | Desktop app | [Tauri](https://tauri.app) | The popup is plain HTML and JavaScript, and Tauri shows it in the system web view. The app is small. Electron also works, but its apps are much larger. |
 | Sync and sign-in | Firebase: Authentication with the Google provider, and Cloud Firestore | Google sign-in and a database in one service. Firestore sends changes to the other devices at once, and it keeps working offline. |
-| Shared logic | `src/tasks.js` stays the one file for the task rules | The add-on, the desktop app and the unit tests use the same rules. |
+| Shared logic | `app/tasks.js` stays the one file for the task rules | The add-on, the desktop app and the unit tests use the same rules. |
 | iPhone | A small web version (step 7) | Firefox for iOS cannot run add-ons. A web page that you add to the home screen can use the same screen and the same sync. |
 
 ## Parts
@@ -84,9 +84,9 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 ## Sign-in
 
 - **Desktop app:** Google does not let its sign-in page run inside an app web view. `desktop/src-tauri/src/google.rs` opens the Google sign-in page in the system browser, with PKCE and a redirect to `http://127.0.0.1:<free port>`, and changes the code for an ID token. This needs a Google OAuth client of the type "Desktop app".
-- **Firefox add-on:** `browser.identity.launchWebAuthFlow` opens the Google sign-in page (`src/account.js`) and gets an ID token (`response_type=id_token`). This needs a Google OAuth client of the type "Web application" with this redirect URI: `https://87661a6e9e70747dfc24f6d51140fd1726dfeb61.extensions.allizom.org/`. Firefox makes this address from the SHA-1 hash of the add-on ID (`toolkit/components/extensions/child/ext-identity.js`).
-- Both send the ID token to the background (`src/sync-bg.js`), which signs in to Firebase with `signInWithCredential`. Firebase keeps the sign-in in IndexedDB.
-- With the emulator in `src/firebase-config.js`, the Preferences page uses a test token that only the Auth emulator takes.
+- **Firefox add-on:** `browser.identity.launchWebAuthFlow` opens the Google sign-in page (`app/account.js`) and gets an ID token (`response_type=id_token`). This needs a Google OAuth client of the type "Web application" with this redirect URI: `https://87661a6e9e70747dfc24f6d51140fd1726dfeb61.extensions.allizom.org/`. Firefox makes this address from the SHA-1 hash of the add-on ID (`toolkit/components/extensions/child/ext-identity.js`).
+- Both send the ID token to the background (`app/sync-bg.js`), which signs in to Firebase with `signInWithCredential`. Firebase keeps the sign-in in IndexedDB.
+- With the emulator in `app/firebase-config.js`, the Preferences page uses a test token that only the Auth emulator takes.
 - Firebase takes the ID token of the "Desktop app" client of the same project: no safelist entry is needed. (A real sign-in in the desktop app worked, and its tasks went to Firestore.)
 - The add-on sign-in works in Firefox with a real account: "Sign in with Google" asks for the optional data collection (authenticationInfo, personallyIdentifyingInfo), `launchWebAuthFlow` opens Google and closes when Google sends the browser back, and Firebase takes the web client's ID token. A task started in the add-on went to Firestore, a task written to Firestore came into the add-on when the popup opened (the add-on's running task paused), and deletes went to Firestore as delete markers.
 - Google does not let a browser under WebDriver control sign in ("This browser or app may not be secure"). A test profile that was signed in to Google without WebDriver keeps the session, and the account chooser then works under WebDriver.
@@ -98,12 +98,12 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 
 | File | What it does |
 |---|---|
-| `src/sync-core.js` | Documents to copies and back, and which documents to write. No Firebase. Unit tests: `tests/sync-core.test.js`. |
-| `src/sync.js` | The sync engine: sign-in, a merge run, the live listener. It gets the Firebase functions from the caller. |
-| `src/sync-bg.js` | Runs the engine in the add-on background and in the desktop main window. It answers the messages `sign-in`, `sign-out` and `sync-now`, and keeps `syncStatus` in storage. |
-| `src/account.js` | The Sync part of the Preferences page. |
-| `src/firebase-config.js` | The Firebase project and the OAuth client IDs. Empty: sync is off. |
-| `firebase/` | `firestore.rules`, the bundle step (`npm run bundle` makes `src/lib/firebase.js`) and the emulator tests (`npm test`, needs Java 21). |
+| `app/sync-core.js` | Documents to copies and back, and which documents to write. No Firebase. Unit tests: `tests/sync-core.test.js`. |
+| `app/sync.js` | The sync engine: sign-in, a merge run, the live listener. It gets the Firebase functions from the caller. |
+| `app/sync-bg.js` | Runs the engine in the add-on background and in the desktop main window. It answers the messages `sign-in`, `sign-out` and `sync-now`, and keeps `syncStatus` in storage. |
+| `app/account.js` | The Sync part of the Preferences page. |
+| `app/firebase-config.js` | The Firebase project and the OAuth client IDs. Empty: sync is off. |
+| `firebase/` | `firestore.rules`, the bundle step (`npm run bundle` makes `app/lib/firebase.js`) and the emulator tests (`npm test`, needs Java 21). |
 
 - A merge run saves the merged copy with `Store.saveSynced`, not with `Store.saveTasks`. `saveTasks` would give a new `updatedAt` to each task that came from the other device, and two devices would then send the same task back and forth.
 - The add-on background is an event page, which Firefox stops when it is not in use. So the add-on syncs when the popup opens (`sync-now`), after each local change, and on an alarm every 5 minutes. The live listener works while the background runs. The desktop main window always runs, so its listener always works.
@@ -113,11 +113,11 @@ Delete markers older than 90 days can be removed. A device that was offline for 
 
 ## Firebase project
 
-The project is `simple-task-timer-e196ff` (Spark plan, no cost), with the Firestore database `(default)` in `me-central2` (Dammam). Its values are in `src/firebase-config.js` and `firebase/.firebaserc`. The sign-in screen (Google Auth Platform) is External and "In production", so any Google account can sign in.
+The project is `simple-task-timer-e196ff` (Spark plan, no cost), with the Firestore database `(default)` in `me-central2` (Dammam). Its values are in `app/firebase-config.js` and `firebase/.firebaserc`. The sign-in screen (Google Auth Platform) is External and "In production", so any Google account can sign in.
 
 The desktop client secret is not in git, because Google turns off client secrets that it finds in public repos. The desktop build (`desktop/copy-web.mjs`) reads it from `desktop/local-secrets.json` (`{"googleDesktopSecret": "..."}`, ignored by git) or from the `GOOGLE_DESKTOP_SECRET` environment variable. A build without it cannot sign in on the desktop. The secret is in the Google Cloud console, Clients, "Simple Task Timer desktop" (Google shows a secret only when it is made; a new one can be added there).
 
-The Firebase web API key (`apiKey` in `src/firebase-config.js`) is in git and in each build, because the add-on, the web page and the desktop app send it with each request. It is not a secret: it only names the project. What stops abuse:
+The Firebase web API key (`apiKey` in `app/firebase-config.js`) is in git and in each build, because the add-on, the web page and the desktop app send it with each request. It is not a secret: it only names the project. What stops abuse:
 - The key can call only Cloud Firestore, Identity Toolkit and Token Service (Google Cloud console, Credentials, "Browser key (auto created by Firebase)", API restrictions). A call to another Google service with the key gets HTTP 403.
 - The Firestore rules: each account reads and writes only its own tasks, with fixed fields and size limits.
 - Only the Google sign-in provider is on.
@@ -152,6 +152,6 @@ These steps made the project. Use them for a new project:
 3. **Firebase project:** Firebase project, Google provider, Firestore with security rules, OAuth clients for the desktop app and the add-on.
 4. **Sync in the desktop app:** sign-in, first upload, live listener, merge.
 5. **Sync in the add-on:** bundle step, sign-in with `identity`, sync on popup open and on an alarm. Test on Firefox for Android.
-6. **Release:** new add-on version (4.2.0) with the privacy text and a privacy policy. The source code goes with the version, because `src/lib/firebase.js` is a minified bundle. The macOS app stays ad-hoc signed: a signed and notarized build needs a paid Apple Developer ID, and it helps only when other people install the app.
-7. **Web version for iPhone:** the popup screen as a small web app on Firebase Hosting (`simple-task-timer-e196ff.web.app`), which you add to the iPhone home screen from Safari (Share, Add to Home Screen). It uses a browser version of the shim (`webapp/web-shim.js`: storage in the page, the time in the page title, no global shortcut), the same Firestore sync with long polling (Safari is WebKit, as in the desktop app), a web app manifest, icons, and a service worker that keeps a copy of the files. Google sign-in goes by a full-page redirect with the web client (the add-on flow, with a `state` value that the page checks), so the web client has the Hosting address as a redirect URI. There is no goal alert: the page timers stop when the page is closed, so an alert at a set time would need a push server.
-8. **Desktop app icon without the grey border:** in the Dock, the icon sat in a grey frame, unlike the other app icons. The cause: `src/icons/icon.svg` draws its own rounded tile (clear corners, a dark bottom edge), and macOS 26 and later put such icons in a grey frame. The fix: `desktop/icon.svg`, the same picture on a tile that fills the whole square, made into `desktop/src-tauri/icons` with `npx tauri icon`. macOS now gives the icon the standard rounded shape with no frame (checked with the icon that macOS draws for the app). The add-on icons stay as they are.
+6. **Release:** new add-on version (4.2.0) with the privacy text and a privacy policy. The source code goes with the version, because `app/lib/firebase.js` is a minified bundle. The macOS app stays ad-hoc signed: a signed and notarized build needs a paid Apple Developer ID, and it helps only when other people install the app.
+7. **Web version for iPhone:** the popup screen as a small web app on Firebase Hosting (`simple-task-timer-e196ff.web.app`), which you add to the iPhone home screen from Safari (Share, Add to Home Screen). It uses a browser version of the shim (`web/web-shim.js`: storage in the page, the time in the page title, no global shortcut), the same Firestore sync with long polling (Safari is WebKit, as in the desktop app), a web app manifest, icons, and a service worker that keeps a copy of the files. Google sign-in goes by a full-page redirect with the web client (the add-on flow, with a `state` value that the page checks), so the web client has the Hosting address as a redirect URI. There is no goal alert: the page timers stop when the page is closed, so an alert at a set time would need a push server.
+8. **Desktop app icon without the grey border:** in the Dock, the icon sat in a grey frame, unlike the other app icons. The cause: `app/icons/icon.svg` draws its own rounded tile (clear corners, a dark bottom edge), and macOS 26 and later put such icons in a grey frame. The fix: `desktop/icon.svg`, the same picture on a tile that fills the whole square, made into `desktop/src-tauri/icons` with `npx tauri icon`. macOS now gives the icon the standard rounded shape with no frame (checked with the icon that macOS draws for the app). The add-on icons stay as they are.

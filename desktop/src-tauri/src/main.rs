@@ -1,6 +1,6 @@
 // Simple Task Timer
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
 // The desktop app. The main window shows the add-on popup and the
 // Preferences window shows the add-on Preferences page (desktop/web). This

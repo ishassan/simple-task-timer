@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- Simple Task Timer. Copyright (C) 2026 Islam Hassan. SPDX-License-Identifier: GPL-3.0-only -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simple Task Timer Preferences</title>
+  <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body class="options">
+  <header>
+    <img src="icons/icon-48.png" width="32" height="32" alt="">
+    <h1>Simple Task Timer</h1>
+  </header>
+
+  <section id="open-section">
+    <h2>Shortcut</h2>
+    <div class="row">
+      <span class="label">Open Simple Task Timer</span>
+      <button type="button" class="key" id="open-key" data-shortcut="_execute_action"></button>
+      <button type="button" class="link" id="open-reset">Reset</button>
+    </div>
+    <p class="error" id="open-error" hidden></p>
+    <p class="hint">This shortcut works in any Firefox window. Click the box, then press the new shortcut. Press Escape to cancel.</p>
+  </section>
+
+  <section id="keys-section">
+    <h2>Keys in the popup</h2>
+    <p class="hint">These keys act on the task that has the focus. In the name field, press the Down arrow to go to the list.</p>
+    <div id="key-rows"></div>
+    <p class="error" id="keys-error" hidden></p>
+    <button type="button" id="keys-reset">Reset all keys</button>
+    <p class="hint">Keys that do not change: Up and Down arrows move between tasks, Enter edits, Escape goes back to the name field, and <span class="undo-key">Ctrl+Z</span> undoes. In the empty name field, Space pauses or resumes the last task.</p>
+  </section>
+
+  <section id="sync-section">
+    <h2>Sync</h2>
+    <p id="sync-state"></p>
+    <div class="row">
+      <button type="button" id="sync-signin" class="primary" hidden>Sign in with Google</button>
+      <button type="button" id="sync-now" hidden>Sync now</button>
+      <button type="button" id="sync-signout" hidden>Sign out</button>
+    </div>
+    <p class="error" id="sync-error" hidden></p>
+    <p class="hint">Sign in with the same Google account on each computer and phone, and they show the same tasks and times. The task names and times are then kept in Google Firebase for your account.</p>
+  </section>
+
+  <p id="status" role="status"></p>
+
+  <template id="key-row">
+    <div class="row">
+      <span class="label"></span>
+      <button type="button" class="key"></button>
+    </div>
+  </template>
+
+  <script src="keys.js"></script>
+  <script src="store.js"></script>
+  <script src="options.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="account.js"></script>
+</body>
+</html>

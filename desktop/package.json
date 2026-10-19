@@ -1,7 +1,7 @@
 {
   "name": "simple-task-timer-desktop",
   "private": true,
-  "license": "GPL-3.0-or-later",
+  "license": "GPL-3.0-only",
   "scripts": {
     "web": "node copy-web.mjs",
     "dev": "tauri dev",

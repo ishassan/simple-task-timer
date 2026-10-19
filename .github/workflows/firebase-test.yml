@@ -1,4 +1,4 @@
-# Tests the Firestore rules and the sync (src/sync.js) with the Firebase
+# Tests the Firestore rules and the sync (app/sync.js) with the Firebase
 # emulators: two devices of one Google account, and another account.
 name: Firebase test
 
@@ -7,9 +7,9 @@ on:
   push:
     paths:
       - 'firebase/**'
-      - 'src/tasks.js'
-      - 'src/sync-core.js'
-      - 'src/sync.js'
+      - 'app/tasks.js'
+      - 'app/sync-core.js'
+      - 'app/sync.js'
       - '.github/workflows/firebase-test.yml'
 
 jobs:

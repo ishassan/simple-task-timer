@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Simple Task Timer",
+  "description": "Time your tasks with one click. Pause, reset, mark done, and get an alert when a task reaches its goal.",
+  "version": "4.2.2",
+  "author": "Islam Hassan",
+  "permissions": ["storage", "alarms", "identity"],
+  "optional_permissions": ["notifications"],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "Simple Task Timer",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": { "default": "Alt+W" },
+      "description": "Open Simple Task Timer"
+    }
+  },
+  "background": {
+    "scripts": ["tasks.js", "store.js", "background.js", "lib/firebase.js", "sync-core.js", "firebase-config.js", "sync.js", "sync-bg.js"]
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{5f590989-34a7-4c7a-b219-5de25a64db43}",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": {
+        "required": ["none"],
+        "optional": ["authenticationInfo", "personallyIdentifyingInfo"]
+      }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  }
+}

@@ -1,12 +1,12 @@
 {
   "name": "simple-task-timer-firebase",
   "private": true,
-  "license": "GPL-3.0-or-later",
+  "license": "GPL-3.0-only",
   "scripts": {
     "test": "firebase emulators:exec --project demo-simple-task-timer --only auth,firestore \"node --test --test-concurrency=1 emulator/rules.js emulator/sync.js\"",
     "deploy-rules": "firebase deploy --only firestore:rules",
-    "bundle": "esbuild bundle-entry.js --bundle --format=iife --global-name=FirebaseLib --minify --legal-comments=external --target=firefox140,safari17 --outfile=../src/lib/firebase.js",
-    "web": "node ../webapp/build.mjs",
+    "bundle": "esbuild bundle-entry.js --bundle --format=iife --global-name=FirebaseLib --minify --legal-comments=external --target=firefox140,safari17 --outfile=../app/lib/firebase.js",
+    "web": "node ../web/build.mjs",
     "deploy-web": "npm run web && firebase deploy --only hosting"
   },
   "devDependencies": {

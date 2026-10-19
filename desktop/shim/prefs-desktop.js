@@ -1,6 +1,6 @@
 // Simple Task Timer
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
 // Desktop app: the "Turn off" button on the Preferences page. It removes the
 // global shortcut, so that no key goes to Simple Task Timer from other apps.

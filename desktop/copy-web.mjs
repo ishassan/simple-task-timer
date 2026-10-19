@@ -1,6 +1,6 @@
 // Simple Task Timer
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
 // Makes desktop/web, the pages of the desktop app, from the add-on files in
 // src. Tauri runs this script before each build (see src-tauri/tauri.conf.json).
@@ -14,7 +14,7 @@
 import { copyFileSync, cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 const here = new URL('./', import.meta.url);
-const src = new URL('../src/', here);
+const src = new URL('../app/', here);
 const out = new URL('web/', here);
 
 rmSync(out, { recursive: true, force: true });
@@ -28,7 +28,7 @@ cpSync(new URL('icons/', src), new URL('icons/', out), { recursive: true });
 try {
   cpSync(new URL('lib/', src), new URL('lib/', out), { recursive: true });
 } catch (e) {
-  throw new Error('src/lib/firebase.js is missing: run "npm run bundle" in firebase/ first');
+  throw new Error('app/lib/firebase.js is missing: run "npm run bundle" in firebase/ first');
 }
 for (const name of ['browser-shim.js', 'desktop.css', 'prefs-desktop.js']) {
   copyFileSync(new URL('shim/' + name, here), new URL(name, out));
@@ -64,7 +64,7 @@ writeFileSync(new URL('options.html', out), prefs);
 let options = readFileSync(new URL('options.js', src), 'utf8');
 options = insert(options, "'Firefox did not accept this shortcut: '", "'This shortcut cannot be used: '");
 writeFileSync(new URL('options.js', out), options);
-// The desktop client secret is not in git (see src/firebase-config.js). It
+// The desktop client secret is not in git (see app/firebase-config.js). It
 // comes from desktop/local-secrets.json, or from GOOGLE_DESKTOP_SECRET.
 let secret = process.env.GOOGLE_DESKTOP_SECRET || '';
 try {

@@ -1,6 +1,6 @@
 // Simple Task Timer
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
 // Google sign-in for the desktop app (OAuth 2.0 for desktop apps, with PKCE).
 // Google does not let its sign-in page run in an app web view, so:

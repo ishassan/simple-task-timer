@@ -1,9 +1,9 @@
-// Unit tests for src/sync-core.js. Run: node --test
+// Unit tests for app/sync-core.js. Run: node --test
 'use strict';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const S = require('../src/sync-core.js');
+const S = require('../app/sync-core.js');
 
 function task(id, fields = {}) {
   return {

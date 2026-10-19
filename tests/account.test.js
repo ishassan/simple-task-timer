@@ -1,4 +1,4 @@
-// Unit tests for src/account.js (the Sync part of Preferences). Run: node --test
+// Unit tests for app/account.js (the Sync part of Preferences). Run: node --test
 'use strict';
 
 const test = require('node:test');
@@ -7,7 +7,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const CODE = fs.readFileSync(path.join(__dirname, '../src/account.js'), 'utf8');
+const CODE = fs.readFileSync(path.join(__dirname, '../app/account.js'), 'utf8');
 
 // Runs account.js on a fake page and gives back its elements.
 async function page(browserApi, web) {

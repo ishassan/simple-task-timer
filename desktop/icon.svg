@@ -11,7 +11,6 @@
     <path d="M44 38 H72 M44 62 H64 M44 86 H58" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
     <circle cx="91" cy="84" r="25" fill="#26215C"/>
     <circle cx="90" cy="81" r="25" fill="#fff"/>
-    <rect x="85" y="50" width="10" height="7" rx="2" fill="#fff"/>
     <path d="M90 81 L90 56 A25 25 0 0 1 113 72 Z" fill="#CECBF6"/>
     <path d="M90 81 V66 M90 81 H101" stroke="#26215C" stroke-width="5" stroke-linecap="round"/>
   </g>

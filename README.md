@@ -1,153 +1,87 @@
-# Simple Task Timer (Firefox)
+<p align="center">
+  <img src="desktop/src-tauri/icons/128x128@2x.png" width="96" alt="">
+</p>
 
-A small Firefox add-on to time your tasks. It works in Firefox for desktop and Firefox for Android.
+<h1 align="center">Simple Task Timer</h1>
 
-Firefox Add-ons page: https://addons.mozilla.org/en-US/firefox/addon/simple-task-timer/
+<p align="center">
+  Time your tasks with one click: on your Mac, in Firefox and on your phone.<br>
+  Sign in with Google, and the same tasks and times are on all your devices.
+</p>
 
-## What it does
+<p align="center">
+  <a href="https://github.com/ishassan/simple-task-timer/releases/latest"><img src="https://img.shields.io/github/v/release/ishassan/simple-task-timer?label=macOS%20app" alt="macOS app"></a>
+  <a href="https://addons.mozilla.org/firefox/addon/simple-task-timer/"><img src="https://img.shields.io/amo/v/simple-task-timer?label=Firefox%20add-on" alt="Firefox add-on"></a>
+  <a href="https://simple-task-timer-e196ff.web.app"><img src="https://img.shields.io/badge/web-iPhone%20and%20browsers-534AB7" alt="Web version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/ishassan/simple-task-timer" alt="License"></a>
+</p>
 
-- Press Enter or Start to start a new task. With no name, the task gets the name "Task 1", "Task 2" and so on.
-- Only one task runs at a time. When you start a task, the task that was running pauses.
-- Each task has Start or Pause, Reset, Done and Delete. Click a task to change its name, its time or its goal.
-- Reset, Done and Delete act at once. You can undo them for 6 seconds.
-- Done tasks go to a folded "Done" group at the bottom. Start a done task to bring it back, or delete all done tasks at once.
-- A task can have a goal. The timer keeps counting after the goal. When the task reaches its goal, the toolbar badge turns green, and you get one desktop notification if you allowed notifications.
-- While a task runs, the toolbar icon shows its time.
-- An update from version 3.x keeps your tasks with their names, times and goals. A task that was running keeps running.
+<p align="center">
+  <img src="docs/images/desktop.png" width="420" alt="The desktop app: the task list in a window, and the time of the running task in the menu bar">
+  <img src="docs/images/iphone.png" width="420" alt="The web version on an iPhone, in light and dark mode">
+</p>
 
-## Keys
+## Features
 
-- **Alt+W** (Option+W on a Mac) opens the popup. The cursor is in the name field, so Alt+W then Enter starts a new task, and Alt+W then Space pauses or resumes the last task. On a Mac, this key then no longer types "∑" in Firefox. You can change this key in Preferences (see below).
-- In the name field: **Enter** starts a new task. **Space** (with the field empty) pauses or resumes the last task. **Down arrow** goes to the list.
-- On a task: **Up** and **Down arrows** move between tasks, **Space** starts or pauses, **Enter** or **E** edits, **R** resets, **D** marks done, **Delete** deletes, **Escape** goes back to the name field. These are the start keys; you can change them.
-- **Ctrl+Z** (Cmd+Z on a Mac) undoes the last reset, done or delete while the Undo bar shows.
-- To change the keys, open **Preferences**: click the gear button in the popup (or Firefox menu, Add-ons and themes, the "..." button of Simple Task Timer, Preferences). There you can change the shortcut that opens the popup and the keys for start or pause, edit, reset, done and delete. The tooltip of each button shows its key.
+- **One click to start.** Press Enter or Start. Only one task runs; the task that was running pauses.
+- **Goals.** Give a task a goal. At the goal you get one alert (Mac and Firefox), and the timer keeps counting.
+- **Undo.** Reset, done and delete act at once, and you can undo them for 6 seconds.
+- **The time is always in view.** In the Firefox toolbar, and in the Mac menu bar.
+- **Keyboard first.** Alt+W (Option+W on a Mac) opens it in Firefox, and from any app with the Mac app. All keys can be changed.
+- **Sync.** Sign in with Google, and your tasks are the same on all your devices. Without sign-in, nothing leaves your device.
 
-Keyboard shortcuts are for Firefox on a computer. Firefox for Android has no keyboard shortcuts for add-ons.
+## Get it
 
-The add-on asks for the notification permission only when you set a goal, and only if you click "Turn on". It works without that permission.
+| Where | How |
+| --- | --- |
+| **Mac** | Download the app from [Releases](https://github.com/ishassan/simple-task-timer/releases/latest). |
+| **Firefox** (computer and Android) | Install the add-on from [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/simple-task-timer/). |
+| **iPhone** (and other browsers) | Open [simple-task-timer-e196ff.web.app](https://simple-task-timer-e196ff.web.app) in Safari, then Share, Add to Home Screen. |
 
-## Sync
+The Mac app is not notarized by Apple. The first time you open it, macOS stops it: open System Settings, Privacy & Security, and click **Open Anyway**.
 
-Sign in with a Google account in **Preferences** (the gear button in the popup), Sync, and the add-on and the desktop app show the same tasks on all your devices. Sign in with the same account on each device. Without sign-in, the tasks stay on the device.
+## How it works
 
-- A change on one device shows on the others: at once in the desktop app, and in the add-on when you open the popup (and every 5 minutes).
-- When two devices change the same task, the newer change wins. Only one task runs: if you start a task on one device, the task that runs on the other device pauses.
-- The task names and times are kept in Google Firebase (Cloud Firestore) for your account. Only your account can read them.
-- The web version (see "Web version" below) syncs too, for example on an iPhone.
-- Sync is not available in Firefox for Android: Firefox for Android has no Google sign-in for add-ons. There, the tasks stay on the device.
+<p align="center">
+  <img src="docs/images/flow.png" width="640" alt="Start a task, edit its name, time or goal, reach the goal, mark it done">
+</p>
 
-Sync uses the Firebase project `simple-task-timer-e196ff`; its values are in `src/firebase-config.js`. With no values there, sync is off and Preferences says so. The steps to make a project are in `docs/desktop-and-sync-plan.md`, "Firebase project".
+- Click a task to change its name, time or goal. Done tasks go to a folded "Done" group.
+- The gear button opens Preferences: the keys, and Sync.
+- Keys in the list: Space starts or pauses, E edits, R resets, D marks done, Delete deletes, Ctrl+Z (Cmd+Z) undoes.
 
-## Build
+### Sync
 
-The add-on has Firebase in it, as one script that `firebase/` makes (`src/lib/firebase.js`). Make it first:
+Sign in with the same Google account on each device. A change shows at once in the desktop app and the web version, and in Firefox when you open the popup. When two devices change the same task, the newer change wins.
+
+Your task names and times are kept in Google Firebase, and only your account can read them. Sync is not available in Firefox for Android, because Firefox for Android has no Google sign-in for add-ons. See the [privacy policy](https://addons.mozilla.org/firefox/addon/simple-task-timer/privacy/).
+
+## Repository
+
+One app, with a folder for each place it runs:
+
+| Folder | What it is |
+| --- | --- |
+| [`app/`](app) | The app itself: the task list, Preferences, the task logic and sync. Every version uses these files. |
+| [`firefox/`](firefox) | The Firefox add-on: its manifest, build and browser tests. |
+| [`desktop/`](desktop) | The Mac app, made with [Tauri](https://tauri.app). |
+| [`web/`](web) | The web version for the iPhone, on Firebase Hosting. |
+| [`firebase/`](firebase) | Sync: the Firestore rules, the Firebase bundle, and the emulator tests. |
+| [`tests/`](tests) | Unit tests of `app/`. |
+| [`docs/`](docs) | The design of the desktop app and sync, and the README images. |
+
+Each folder's README has its build and test steps. First make the Firebase bundle, which all versions need:
 
 ```bash
 cd firebase && npm install && npm run bundle
 ```
 
-```bash
-npx web-ext build --source-dir src
-```
-
-The package goes to `web-ext-artifacts/`.
-
-The PNG icons come from `src/icons/icon.svg` and `src/icons/icon-16.svg`. To make them again on macOS:
-
-```bash
-sh ci/render_icons.sh
-```
-
-## Test
-
-Unit tests (Node.js 20 or newer, no packages):
+Unit tests (Node.js 20 or newer):
 
 ```bash
 node --test
 ```
 
-Browser tests in headless Firefox (need `pip install selenium`):
-
-```bash
-python3 ci/goal_test.py
-```
-
-```bash
-python3 ci/update_test.py
-```
-
-`ci/goal_test.py` tests the buttons, the keys, Undo, the goal and the notification. `ci/update_test.py` installs 3.11.0 (from the git tag `v3.11.0`), makes tasks in it, updates to this version, and checks that the tasks are kept.
-
-`ci/android_test.py` runs the add-on in an Android emulator. GitHub Actions runs these tests (see `.github/workflows/`).
-
-Firestore rules and sync tests, with the Firebase emulators (need Java 21 or newer):
-
-```bash
-cd firebase && npm test
-```
-
-They test that each account can read and write only its own tasks, and they run two devices of one account and a device of another account against the emulators.
-
-The web version in headless WebKit, the engine of Safari on the iPhone (needs `pip install playwright` and `playwright install webkit`):
-
-```bash
-cd firebase && npx firebase emulators:exec --project demo-simple-task-timer --only auth,firestore "python3 ../ci/web_test.py"
-```
-
-It opens two iPhone-sized pages as two devices, signs both in to the emulators, and checks that a task started on one shows on the other at once.
-
-## Desktop app
-
-`desktop/` holds a desktop app made with [Tauri](https://tauri.app). It shows the same screen as the add-on, in its own window. It syncs with the add-on (see "Sync" above).
-
-- The window works like the popup: the same buttons, keys, Undo and goals.
-- The menu bar shows the time of the running task, like the toolbar badge. Click the menu-bar icon to show or hide the window. Its menu has Preferences and Quit.
-- A global shortcut shows or hides the window from any app. At the start it is **Alt+W** (Option+W on a Mac), as in the add-on. While the app runs, other apps do not get this key: on a Mac, Option+W then types no "∑" in any app. To change the shortcut or turn it off, open **Preferences**: the gear button in the window, Command+, (Ctrl+, on Windows and Linux), or Preferences in the menu-bar menu.
-- The close button hides the window. The timer keeps counting.
-- The goal notification is a system notification. Turn it on with "Turn on" in the window, as in the add-on.
-- The tasks are saved in `state.json` in the app data folder (on macOS: `~/Library/Application Support/io.github.ishassan.simpletasktimer/`).
-- Preferences has the same keys for the task rows as the add-on.
-
-How it works: `desktop/copy-web.mjs` copies the add-on files from `src/` into `desktop/web/` and adds `desktop/shim/browser-shim.js`. That script gives the add-on code the Firefox `browser` calls it uses (storage, badge, alarms, notifications, the shortcut), with the app commands in `desktop/src-tauri/src/main.rs`. The Preferences window is the add-on Preferences page, with desktop texts and a "Turn off" button for the shortcut.
-
-Build (needs Rust and Node.js, and the Firebase bundle from "Build" above). For Google sign-in, the build also needs the desktop client secret in `desktop/local-secrets.json` (see `docs/desktop-and-sync-plan.md`, "Firebase project"):
-
-```bash
-cd desktop && npm install
-```
-
-```bash
-cd desktop && npx tauri build
-```
-
-The app goes to `desktop/src-tauri/target/release/bundle/macos/`. Use `npx tauri dev` to run it while you work on it.
-
-The app icons come from `desktop/icon.svg`. It fills the whole square, so macOS gives it the rounded shape and does not put it in a grey frame. To make them again (then remove the files that `tauri.conf.json` does not list):
-
-```bash
-cd desktop && npx tauri icon icon.svg -o src-tauri/icons
-```
-
-## Web version
-
-`webapp/` makes a small web version of the popup for the iPhone (and other browsers), at https://simple-task-timer-e196ff.web.app. On the iPhone, open it in Safari, then Share, Add to Home Screen. It opens like an app.
-
-- It has the same task list, buttons and goals as the popup, and the Sync part of Preferences at the bottom.
-- Sign in with Google there to sync with the add-on and the desktop app. The page goes to Google and comes back signed in.
-- The tasks are kept in the page storage of the browser. A copy of the page files lets it open with no network.
-- There is no goal alert: a web page cannot show an alert at a set time when it is closed. The page title shows the time of the running task.
-
-How it works: `webapp/build.mjs` copies the add-on files from `src/` into `firebase/hosting/` and adds `webapp/web-shim.js`, which gives the add-on code the Firefox `browser` calls it uses, in a normal web page. Build and put it on Firebase Hosting (needs the Firebase bundle from "Build" above, and `firebase login`):
-
-```bash
-cd firebase && npm run deploy-web
-```
-
-The Google sign-in client (`googleWebClientId`) must have `https://simple-task-timer-e196ff.web.app/` as an authorized redirect URI.
-
 ## License
 
-Copyright (C) 2026 Islam Hassan
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See LICENSE.
+Copyright (C) 2026 Islam Hassan. Simple Task Timer is free software under the [GNU General Public License v3.0](LICENSE).

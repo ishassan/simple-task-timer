@@ -1,4 +1,4 @@
-// End-to-end test of src/sync.js with the Auth and Firestore emulators:
+// End-to-end test of app/sync.js with the Auth and Firestore emulators:
 // two devices with the same Google account, and one device of another user.
 // Run: npm test (in firebase/). The rules in firestore.rules apply. The test
 // files run one at a time: the rules test clears the database.
@@ -9,8 +9,8 @@ const assert = require('node:assert/strict');
 const app = require('firebase/app');
 const auth = require('firebase/auth');
 const firestore = require('firebase/firestore');
-const Tasks = require('../../src/tasks.js');
-const Sync = require('../../src/sync.js');
+const Tasks = require('../../app/tasks.js');
+const Sync = require('../../app/sync.js');
 
 const lib = {
   initializeApp: app.initializeApp,

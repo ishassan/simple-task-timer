@@ -1,9 +1,9 @@
 // Simple Task Timer
 // Copyright (C) 2026 Islam Hassan
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: GPL-3.0-only
 //
-// The Firebase functions that src/sync.js uses. "npm run bundle" makes
-// src/lib/firebase.js from this file: one script that sets the global
+// The Firebase functions that app/sync.js uses. "npm run bundle" makes
+// app/lib/firebase.js from this file: one script that sets the global
 // FirebaseLib. The add-on cannot load code from the internet, so Firebase is
 // in the package. Auth comes from "firebase/auth/web-extension", the build
 // with no remote scripts (no sign-in pop-ups or reCAPTCHA).

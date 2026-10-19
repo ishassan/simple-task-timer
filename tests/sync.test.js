@@ -1,9 +1,9 @@
-// Unit tests for the sync stamps and the merge in src/tasks.js. Run: node --test
+// Unit tests for the sync stamps and the merge in app/tasks.js. Run: node --test
 'use strict';
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const T = require('../src/tasks.js');
+const T = require('../app/tasks.js');
 
 const MIN = 60 * 1000;
 

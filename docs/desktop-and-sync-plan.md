@@ -117,6 +117,13 @@ The project is `simple-task-timer-e196ff` (Spark plan, no cost), with the Firest
 
 The desktop client secret is not in git, because Google turns off client secrets that it finds in public repos. The desktop build (`desktop/copy-web.mjs`) reads it from `desktop/local-secrets.json` (`{"googleDesktopSecret": "..."}`, ignored by git) or from the `GOOGLE_DESKTOP_SECRET` environment variable. A build without it cannot sign in on the desktop. The secret is in the Google Cloud console, Clients, "Simple Task Timer desktop" (Google shows a secret only when it is made; a new one can be added there).
 
+The Firebase web API key (`apiKey` in `src/firebase-config.js`) is in git and in each build, because the add-on, the web page and the desktop app send it with each request. It is not a secret: it only names the project. What stops abuse:
+- The key can call only Cloud Firestore, Identity Toolkit and Token Service (Google Cloud console, Credentials, "Browser key (auto created by Firebase)", API restrictions). A call to another Google service with the key gets HTTP 403.
+- The Firestore rules: each account reads and writes only its own tasks, with fixed fields and size limits.
+- Only the Google sign-in provider is on.
+- The Spark plan has no billing account, so abuse cannot make a bill. It can only use up the free daily limits.
+- The key has no website limit, because the add-on (`moz-extension://`) and the desktop app (`tauri://`) have no website address. For the same reason, App Check (reCAPTCHA) cannot protect the add-on and the desktop app, and its enforcement is per service, not per app.
+
 These steps made the project. Use them for a new project:
 
 1. Sign in to the Firebase CLI: `cd firebase && npx firebase login`.
@@ -127,6 +134,7 @@ These steps made the project. Use them for a new project:
    - OAuth consent screen: user type External; add your Google account as a test user (or publish the app).
    - Credentials, the web client: add the redirect URI of the add-on (see "Sign-in").
    - Credentials, Create credentials, OAuth client ID, type "Desktop app": its ID and secret go into `googleDesktopClientId` and `googleDesktopSecret`.
+   - Credentials, the Firebase browser key: API restrictions, only Cloud Firestore API, Identity Toolkit API and Token Service API.
 6. Put the web app config into `firebase`, and the web client ID into `googleWebClientId`.
 
 ## Things to check before the release

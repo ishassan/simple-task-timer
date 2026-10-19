@@ -60,6 +60,11 @@ test('a task must have the right fields and types', async () => {
   const { updatedAt, ...noStamp } = task('t1');
   await assertFails(setDoc(ref('t1'), noStamp));
   await assertSucceeds(setDoc(ref('t1'), task('t1', { startedAt: null, lastRunAt: null, goalMs: 1500000 })));
+  // Task IDs are UUIDs (36 characters): a long ID cannot fill the database
+  const long = 'x'.repeat(65);
+  await assertFails(setDoc(ref(long), task(long)));
+  await assertFails(setDoc(ref(long), { deletedAt: 5 }));
+  await assertSucceeds(setDoc(ref('x'.repeat(64)), task('x'.repeat(64))));
 });
 
 test('a delete marker has only deletedAt', async () => {

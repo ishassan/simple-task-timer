@@ -1,6 +1,6 @@
 [package]
 name = "simple-task-timer"
-version = "4.3.0"
+version = "4.3.1"
 description = "Simple Task Timer desktop app"
 authors = ["Islam Hassan"]
 license = "GPL-3.0-only"

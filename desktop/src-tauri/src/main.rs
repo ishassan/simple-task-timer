@@ -14,9 +14,12 @@
 //   - Google sign-in in the system browser (google_sign_in, see google.rs)
 // The close button hides a window. On macOS, the last window on screen does
 // not hide: the app hides (as Cmd+H does), so the app you were in before
-// comes back to the front. This lets the goal notification show as a banner
-// (macOS shows no banner for the app in front), and a click on the banner
-// shows the app again with its window. Quit is in the tray menu (and Cmd+Q).
+// comes back to the front, and the app leaves the Dock and the app switcher
+// (only the tray icon stays). The timers keep running. This lets the goal
+// notification show as a banner (macOS shows no banner for the app in
+// front), and a click on the banner shows the app again with its window.
+// When a window comes back, the Dock icon comes back. Quit is in the tray
+// menu (and Cmd+Q).
 // Preferences is in the tray menu and in the app menu (Cmd+, or Ctrl+,).
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -156,8 +159,8 @@ fn hide_window(window: Window) -> Result<(), String> {
     hide(&window).map_err(|e| e.to_string())
 }
 
-// Hides a window. On macOS, hides the app in its place when no other window
-// is on screen
+// Hides a window. On macOS, when no other window is on screen, hides the app
+// in its place and removes it from the Dock
 fn hide<R: Runtime>(window: &Window<R>) -> tauri::Result<()> {
     #[cfg(target_os = "macos")]
     {
@@ -167,14 +170,24 @@ fn hide<R: Runtime>(window: &Window<R>) -> tauri::Result<()> {
             .values()
             .any(|w| w.label() != window.label() && w.is_visible().unwrap_or(false));
         if !others {
-            return app.hide();
+            app.hide()?;
+            return app.set_activation_policy(tauri::ActivationPolicy::Accessory);
         }
     }
     window.hide()
 }
 
+// Puts the app back in the Dock (macOS)
+fn to_dock<R: Runtime>(app: &AppHandle<R>) {
+    #[cfg(target_os = "macos")]
+    let _ = app.set_activation_policy(tauri::ActivationPolicy::Regular);
+    #[cfg(not(target_os = "macos"))]
+    let _ = app;
+}
+
 // Shows the window and tells the page, which puts the cursor in the name field
 fn show_window(app: &AppHandle) {
+    to_dock(app);
     #[cfg(target_os = "macos")]
     let _ = app.show();
     if let Some(window) = app.get_webview_window(WINDOW) {
@@ -199,6 +212,7 @@ fn toggle_window(app: &AppHandle) {
 // Shows the Preferences window. The app makes it hidden at start
 // (tauri.conf.json): a window made later from a menu stayed empty on macOS.
 fn show_prefs(app: &AppHandle) -> tauri::Result<()> {
+    to_dock(app);
     #[cfg(target_os = "macos")]
     app.show()?;
     if let Some(window) = app.get_webview_window(PREFS) {
@@ -285,10 +299,16 @@ fn main() {
             Ok(())
         })
         .on_window_event(|window, event| {
-            // The windows hide, so the timers of the main window keep running
-            if let WindowEvent::CloseRequested { api, .. } = event {
-                api.prevent_close();
-                let _ = hide(window);
+            match event {
+                // The windows hide, so the timers of the main window keep running
+                WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    let _ = hide(window);
+                }
+                // A window can come back without show_window, for example by
+                // a click on the goal banner
+                WindowEvent::Focused(true) => to_dock(window.app_handle()),
+                _ => {}
             }
         })
         .build(tauri::generate_context!())

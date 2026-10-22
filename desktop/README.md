@@ -4,7 +4,7 @@ The desktop app, made with [Tauri](https://tauri.app). It shows the same task li
 
 - The menu bar shows the time of the running task. Click the icon to show or hide the window; its menu has Preferences and Quit.
 - A global shortcut shows or hides the window from any app: Alt+W (Option+W) at the start. While the app runs, other apps do not get this key. Change it or turn it off in Preferences (the gear button, or Cmd+,).
-- The close button hides the window, and the timer keeps counting.
+- The close button hides the window and removes the app from the Dock, and the timer keeps counting. The menu bar icon stays. To stop the app, use Quit in the menu bar icon's menu.
 - The goal alert is a system notification.
 - The tasks are saved in `~/Library/Application Support/io.github.ishassan.simpletasktimer/state.json`.
 

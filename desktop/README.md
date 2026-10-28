@@ -22,6 +22,14 @@ cd desktop && npm install && npx tauri build
 
 The app goes to `src-tauri/target/release/bundle/`. Use `npx tauri dev` while you work on it.
 
+## Release
+
+The "Mac release" workflow (`.github/workflows/mac-release.yml`) builds the app on a GitHub Mac with Apple silicon, makes `Simple-Task-Timer-<version>-mac-arm64.dmg`, and puts it in the GitHub release `v<version>`. When that release is not there, the workflow makes it, with the release notes. When the release already has the file, the workflow stops.
+
+1. Raise the version in `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `src-tauri/Cargo.lock`.
+2. One time only: add the repository secret `GOOGLE_DESKTOP_SECRET`, the client secret of "Simple Task Timer desktop" (see [`docs/desktop-and-sync-plan.md`](../docs/desktop-and-sync-plan.md), "Firebase project"). Without it, the workflow stops, because sign-in does not work in a build without the secret.
+3. In GitHub, open Actions, "Mac release", Run workflow. Write "What's new" there, with `;` between the items.
+
 The app icons come from `icon.svg`, which fills the whole square so that macOS gives it the standard rounded shape. To make them again (then remove the files that `tauri.conf.json` does not list):
 
 ```bash

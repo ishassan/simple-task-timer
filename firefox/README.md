@@ -22,6 +22,14 @@ npx web-ext build --source-dir firefox/build
 
 The package goes to `web-ext-artifacts/`. AMO needs the source code with each version, because `app/lib/firebase.js` is a minified bundle.
 
+## Release
+
+The "Firefox release" workflow (`.github/workflows/firefox-release.yml`) sends a new version to AMO. It builds the add-on, makes the source code package from git, and sends both to AMO as a listed version. Mozilla then reviews the version.
+
+1. Raise `version` in `manifest.json`. AMO refuses a version that it already has.
+2. One time only: add the repository secrets `AMO_API_KEY` (JWT issuer) and `AMO_API_SECRET` (JWT secret), from the AMO Developer Hub, Manage API Keys.
+3. In GitHub, open Actions, "Firefox release", Run workflow. You can write the release notes there.
+
 ## Test
 
 Browser tests in headless Firefox (need `pip install selenium`), on `firefox/build`:

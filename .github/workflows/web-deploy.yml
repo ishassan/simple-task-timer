@@ -1,0 +1,50 @@
+# Builds the web version (web/) and puts it on Firebase Hosting:
+# simple-task-timer-e196ff.web.app.
+# Needs the repository secret FIREBASE_SERVICE_ACCOUNT: the JSON key of a
+# Google Cloud service account of the project with the roles Firebase Hosting
+# Admin and API Keys Viewer.
+name: Web deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check the secret
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::Add the repository secret FIREBASE_SERVICE_ACCOUNT (the JSON key of a service account with Firebase Hosting Admin and API Keys Viewer)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Make the Firebase bundle (app/lib/firebase.js)
+        working-directory: firebase
+        run: npm ci && npm run bundle
+
+      - name: Run the unit tests
+        run: node --test
+
+      - name: Make the web version (firebase/hosting)
+        working-directory: firebase
+        run: npm run web
+
+      - name: Deploy to Firebase Hosting
+        working-directory: firebase
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          key="$RUNNER_TEMP/firebase-key.json"
+          trap 'rm -f "$key"' EXIT
+          (umask 077 && printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$key")
+          GOOGLE_APPLICATION_CREDENTIALS="$key" npx firebase deploy --only hosting --non-interactive

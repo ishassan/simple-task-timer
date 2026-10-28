@@ -21,6 +21,11 @@ Needs the Firebase bundle (see the [main README](../README.md)) and `firebase lo
 cd firebase && npm run deploy-web
 ```
 
+Or deploy from GitHub, with no computer: open Actions, "Web deploy" (`.github/workflows/web-deploy.yml`), Run workflow. It needs the repository secret `FIREBASE_SERVICE_ACCOUNT`, one time only:
+
+1. In the Google Cloud console, project `simple-task-timer-e196ff`, IAM and Admin, Service accounts: create a service account with the roles Firebase Hosting Admin and API Keys Viewer.
+2. In the service account, Keys, Add key, JSON. Put all the text of the key file into the secret.
+
 ## Test
 
 In headless WebKit, the engine of Safari (needs Java 21 or newer, `pip install playwright` and `playwright install webkit`):

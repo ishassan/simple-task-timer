@@ -1,0 +1,64 @@
+# Sends the Firefox add-on to addons.mozilla.org (AMO) as a new listed
+# version, with its source code, because app/lib/firebase.js is a minified
+# bundle. The version comes from firefox/manifest.json: AMO refuses a version
+# that it already has. Mozilla reviews the version before it goes live.
+# Needs the repository secrets AMO_API_KEY (JWT issuer) and AMO_API_SECRET
+# (JWT secret), from the AMO Developer Hub, Manage API Keys.
+name: Firefox release
+
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: 'Release notes on AMO (optional)'
+        required: false
+        default: ''
+
+jobs:
+  amo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check the secrets
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: |
+          if [ -z "$AMO_API_KEY" ] || [ -z "$AMO_API_SECRET" ]; then
+            echo "::error::Add the repository secrets AMO_API_KEY and AMO_API_SECRET (AMO Developer Hub, Manage API Keys)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Make the Firebase bundle (app/lib/firebase.js)
+        working-directory: firebase
+        run: npm ci && npm run bundle
+
+      - name: Run the unit tests
+        run: node --test
+
+      - name: Make the add-on (firefox/build)
+        run: node firefox/build.mjs
+
+      - name: Make the source code package
+        run: git archive --format=zip -o "$RUNNER_TEMP/source.zip" HEAD
+
+      - name: Send the version to AMO
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          metadata=()
+          if [ -n "$NOTES" ]; then
+            node -e 'require("fs").writeFileSync(process.argv[1], JSON.stringify({ version: { release_notes: { "en-US": process.env.NOTES } } }))' "$RUNNER_TEMP/metadata.json"
+            metadata=(--amo-metadata "$RUNNER_TEMP/metadata.json")
+          fi
+          # --approval-timeout 0: do not wait for the review
+          npx --yes web-ext@8.10.0 sign --source-dir firefox/build --artifacts-dir "$RUNNER_TEMP/artifacts" \
+            --channel listed --upload-source-code "$RUNNER_TEMP/source.zip" --approval-timeout 0 "${metadata[@]}"

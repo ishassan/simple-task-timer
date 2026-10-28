@@ -1,0 +1,111 @@
+# Builds the Mac app on a Mac with Apple silicon and puts it in the GitHub
+# release v<version> as Simple-Task-Timer-<version>-mac-arm64.dmg. The
+# version comes from desktop/src-tauri/tauri.conf.json. When the release is
+# not there, the workflow makes it, with the release notes. When the release
+# already has the file, the workflow stops: raise the version first.
+# The app is ad-hoc signed and not notarized, as with a build on your Mac.
+# Needs the repository secret GOOGLE_DESKTOP_SECRET, the client secret of the
+# OAuth client "Simple Task Timer desktop" (see docs/desktop-and-sync-plan.md).
+name: Mac release
+
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: "What's new, for a new release (put ; between the items)"
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check the secret
+        env:
+          GOOGLE_DESKTOP_SECRET: ${{ secrets.GOOGLE_DESKTOP_SECRET }}
+        run: |
+          if [ -z "$GOOGLE_DESKTOP_SECRET" ]; then
+            echo "::error::Add the repository secret GOOGLE_DESKTOP_SECRET. Without it, sign-in does not work in the app."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Read the version
+        id: version
+        run: echo "version=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Stop when the release already has the app
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          file="Simple-Task-Timer-$VERSION-mac-arm64.dmg"
+          if gh release view "v$VERSION" --json assets --jq '.assets[].name' 2>/dev/null | grep -xF "$file" > /dev/null; then
+            echo "::error::Release v$VERSION already has $file. Raise the version in desktop/src-tauri/tauri.conf.json, Cargo.toml and Cargo.lock."
+            exit 1
+          fi
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Make the Firebase bundle (app/lib/firebase.js)
+        working-directory: firebase
+        run: npm ci && npm run bundle
+
+      - name: Run the unit tests
+        run: node --test
+
+      - name: Build the app
+        working-directory: desktop
+        env:
+          GOOGLE_DESKTOP_SECRET: ${{ secrets.GOOGLE_DESKTOP_SECRET }}
+        run: npm ci && npx tauri build
+
+      - name: Make the disk image
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/dmg"
+          ditto "desktop/src-tauri/target/release/bundle/macos/Simple Task Timer.app" "$RUNNER_TEMP/dmg/Simple Task Timer.app"
+          ln -s /Applications "$RUNNER_TEMP/dmg/Applications"
+          hdiutil create -volname "Simple Task Timer" -srcfolder "$RUNNER_TEMP/dmg" -format UDZO -ov \
+            "$RUNNER_TEMP/Simple-Task-Timer-$VERSION-mac-arm64.dmg"
+
+      - name: Put the app in the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          file="$RUNNER_TEMP/Simple-Task-Timer-$VERSION-mac-arm64.dmg"
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            gh release upload "v$VERSION" "$file"
+            exit 0
+          fi
+          {
+            echo '## Downloads'
+            echo
+            echo '| File | For |'
+            echo '| --- | --- |'
+            echo "| \`Simple-Task-Timer-$VERSION-mac-arm64.dmg\` | The Mac app, for Macs with Apple silicon (M1 or newer). Open the file and drag the app to Applications. |"
+            echo
+            echo 'The Firefox add-on is on [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/simple-task-timer/). On the iPhone, use the web version: open [simple-task-timer-e196ff.web.app](https://simple-task-timer-e196ff.web.app) in Safari, then Share, Add to Home Screen.'
+            echo
+            echo 'The Mac app is not notarized by Apple. The first time you open it, macOS stops it: open System Settings, Privacy & Security, and click **Open Anyway**.'
+            if [ -n "$NOTES" ]; then
+              echo
+              echo "## What's new"
+              echo
+              printf '%s\n' "$NOTES" | tr ';' '\n' | sed '/^[[:space:]]*$/d; s/^[[:space:]]*/- /; s/[[:space:]]*$//'
+            fi
+          } > "$RUNNER_TEMP/notes.md"
+          gh release create "v$VERSION" "$file" --target "$GITHUB_SHA" \
+            --title "Simple Task Timer $VERSION" --notes-file "$RUNNER_TEMP/notes.md"

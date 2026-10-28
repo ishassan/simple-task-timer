@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Simple Task Timer",
   "description": "Time your tasks with one click. Pause, reset, mark done, and get an alert when a task reaches its goal.",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "author": "Islam Hassan",
   "permissions": ["storage", "alarms", "identity"],
   "optional_permissions": ["notifications"],

@@ -3,8 +3,10 @@
 # It signs in to Google Cloud with Workload Identity Federation, with no key:
 # GitHub gives the run a short-lived token, and Google lets runs from this
 # repository act as the service account github-web-deploy (roles Firebase
-# Hosting Admin and API Keys Viewer). The pool "github" and its provider
-# "simple-task-timer" accept only this repository (see web/README.md).
+# Hosting Admin, API Keys Viewer and Service Usage Consumer; the Firebase CLI
+# needs Service Usage Consumer to check that the Hosting API is on). The pool
+# "github" and its provider "simple-task-timer" accept only this repository
+# (see web/README.md).
 name: Web deploy
 
 on:

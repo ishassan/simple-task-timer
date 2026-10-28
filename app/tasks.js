@@ -116,13 +116,17 @@
   }
 
   // Changes name, time or goal. A field that is undefined does not change.
+  // addMs adds time to the time shown now (less than 0 takes time away). The
+  // time does not go below 0.
   // The goal can notify again when the new time or goal puts the task below it.
   function edit(tasks, id, changes, now) {
     return update(tasks, id, t => {
       const next = { ...t };
       if (changes.name !== undefined) next.name = changes.name.trim() || t.name;
-      if (changes.elapsedMs !== undefined) {
-        next.elapsedMs = changes.elapsedMs;
+      if (changes.elapsedMs !== undefined || changes.addMs !== undefined) {
+        next.elapsedMs = changes.elapsedMs !== undefined
+          ? changes.elapsedMs
+          : Math.max(0, shownMs(t, now) + changes.addMs);
         if (isRunning(t)) next.startedAt = now;
       }
       if (changes.goalMs !== undefined) next.goalMs = changes.goalMs;
@@ -304,6 +308,18 @@
     return Math.round(ms);
   }
 
+  // Reads a change of time: "+5m", "-1h", "+0:10:00". After the + or -, the
+  // text is a duration that parseDuration reads. Returns milliseconds (less
+  // than 0 for -), null for a text that does not start with + or -, or NaN
+  // for a text it cannot read.
+  function parseChange(text) {
+    const m = /^\s*([+-])\s*(.*)$/.exec(String(text == null ? '' : text));
+    if (!m) return null;
+    const ms = parseDuration(m[2]);
+    if (ms == null || Number.isNaN(ms)) return NaN;
+    return m[1] === '-' ? -ms : ms;
+  }
+
   function pad(n) {
     return String(n).padStart(2, '0');
   }
@@ -342,7 +358,7 @@
   const api = {
     isRunning, shownMs, goalReached, goalTime, runningTask, lastTask, nextName,
     create, start, pause, reset, markDone, remove, removeDone, edit, setGoalNotified, fromV3,
-    changedAt, stamp, merge, parseDuration, formatClock, formatShort, badgeText,
+    changedAt, stamp, merge, parseDuration, parseChange, formatClock, formatShort, badgeText,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

@@ -66,7 +66,8 @@
   <template id="edit-template">
     <form class="edit" autocomplete="off" novalidate>
       <label>Name <input name="name" type="text" maxlength="200"></label>
-      <label>Time <input name="time" type="text" placeholder="0:25:00" enterkeyhint="done"></label>
+      <label>Time <input name="time" type="text" placeholder="0:25:00" enterkeyhint="done"
+                          title="Write a new time, or +5m or -5m to add or take away time."></label>
       <label>Goal <input name="goal" type="text" placeholder="None" enterkeyhint="done"></label>
       <div class="chips">
         <button type="button" data-goal="15m">15m</button>

@@ -47,6 +47,7 @@ The Mac app is not notarized by Apple. The first time you open it, macOS stops i
 </p>
 
 - Click a task to change its name, time or goal. Done tasks go to a folded "Done" group.
+- To add time or take time away, write `+` or `-` and a duration in the Time field: `+5m`, `-5m`, `+1h`, `-30s`. With 1:00:00 on the timer, `+5m` makes it 1:05:00. The time does not go below 0.
 - The gear button opens Preferences: the keys, and Sync.
 - Keys in the list: Space starts or pauses, E edits, R resets, D marks done, Delete deletes, Ctrl+Z (Cmd+Z) undoes.
 

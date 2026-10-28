@@ -117,6 +117,35 @@ test('edit of a running task sets its time from now', () => {
   assert.ok(T.isRunning(list[0]));
 });
 
+test('edit adds time to the time shown now, and keeps a running task running', () => {
+  let list = T.create([], 'x', 0, 'x');
+  list = T.edit(list, 'x', { addMs: 5 * MIN }, HOUR);
+  assert.equal(T.shownMs(list[0], HOUR), HOUR + 5 * MIN);
+  assert.equal(T.shownMs(list[0], HOUR + MIN), HOUR + 6 * MIN);
+  assert.ok(T.isRunning(list[0]));
+  list = T.edit(list, 'x', { addMs: -10 * MIN }, HOUR + MIN);
+  assert.equal(T.shownMs(list[0], HOUR + MIN), 56 * MIN);
+});
+
+test('edit adds time to a paused task, and the time does not go below 0', () => {
+  let list = T.create([], 'x', 0, 'x');
+  list = T.pause(list, 'x', HOUR);
+  list = T.edit(list, 'x', { addMs: -5 * MIN }, 2 * HOUR);
+  assert.equal(list[0].elapsedMs, 55 * MIN);
+  assert.equal(T.isRunning(list[0]), false);
+  list = T.edit(list, 'x', { addMs: -2 * HOUR }, 2 * HOUR);
+  assert.equal(list[0].elapsedMs, 0);
+});
+
+test('time taken away below the goal lets the goal notify again', () => {
+  let list = T.create([], 'x', 0, 'x');
+  list = T.edit(list, 'x', { goalMs: 25 * MIN }, 0);
+  list = T.setGoalNotified(list, 'x');
+  list = T.edit(list, 'x', { addMs: -10 * MIN }, 30 * MIN);
+  assert.equal(list[0].goalNotified, false);
+  assert.equal(T.goalTime(list[0]), 35 * MIN);
+});
+
 test('edit keeps the old name when the new name is empty', () => {
   let list = T.create([], 'x', 0, 'x');
   list = T.edit(list, 'x', { name: '   ' }, 0);
@@ -173,6 +202,26 @@ test('parseDuration reads the loose formats', () => {
   assert.equal(T.parseDuration('   '), null);
   for (const bad of ['abc', '1:70', '1x', '5 m s', 'h', '1ms', '-5', '1::2']) {
     assert.ok(Number.isNaN(T.parseDuration(bad)), bad);
+  }
+});
+
+test('parseChange reads + and - in front of a duration', () => {
+  const cases = {
+    '+5m': 5 * MIN,
+    '-5m': -5 * MIN,
+    '+1h': HOUR,
+    '-1h': -HOUR,
+    '+30s': 30 * 1000,
+    '-30s': -30 * 1000,
+    '+1h 5m': 65 * MIN,
+    '  - 5m ': -5 * MIN,
+    '+0:10:00': 10 * MIN,
+    '+2': 2 * HOUR,
+  };
+  for (const [text, ms] of Object.entries(cases)) assert.equal(T.parseChange(text), ms, text);
+  for (const plain of ['', '5m', '1:00:00', null]) assert.equal(T.parseChange(plain), null, plain);
+  for (const bad of ['+', '-', '+abc', '-5x', '+-5m', '--5m']) {
+    assert.ok(Number.isNaN(T.parseChange(bad)), bad);
   }
 });
 

@@ -308,16 +308,31 @@
     return Math.round(ms);
   }
 
-  // Reads a change of time: "+5m", "-1h", "+0:10:00". After the + or -, the
-  // text is a duration that parseDuration reads. Returns milliseconds (less
-  // than 0 for -), null for a text that does not start with + or -, or NaN
-  // for a text it cannot read.
-  function parseChange(text) {
-    const m = /^\s*([+-])\s*(.*)$/.exec(String(text == null ? '' : text));
-    if (!m) return null;
-    const ms = parseDuration(m[2]);
-    if (ms == null || Number.isNaN(ms)) return NaN;
-    return m[1] === '-' ? -ms : ms;
+  // Reads the Time field of the edit area. shown is the time the field showed
+  // when it opened. Each part is a duration that parseDuration reads.
+  //   "1:20:00"                      {elapsedMs}: the new time
+  //   "+5m", "-1h", "+1h-5m"         {addMs}: a change to the time shown at save
+  //   "7:28:42+5m" (shown 7:28:42)   {addMs}: the same, because a running task
+  //                                  has moved on since the field showed its time
+  //   "2:00:00+5m"                   {elapsedMs}: 2:00:00 changed by 5m, not below 0
+  // Returns null for an empty text, or NaN for a text it cannot read.
+  function parseTimeField(text, shown) {
+    const parts = String(text == null ? '' : text).split(/([+-])/).map(p => p.trim());
+    if (parts.length === 1) {
+      const ms = parseDuration(parts[0]);
+      return ms == null ? null : Number.isNaN(ms) ? NaN : { elapsedMs: ms };
+    }
+    let add = 0;
+    for (let i = 1; i < parts.length; i += 2) {
+      const ms = parseDuration(parts[i + 1]);
+      if (ms == null || Number.isNaN(ms)) return NaN;
+      add += parts[i] === '-' ? -ms : ms;
+    }
+    if (parts[0] === '') return { addMs: add };
+    const base = parseDuration(parts[0]);
+    if (Number.isNaN(base)) return NaN;
+    if (base === parseDuration(shown)) return { addMs: add };
+    return { elapsedMs: Math.max(0, base + add) };
   }
 
   function pad(n) {
@@ -358,7 +373,7 @@
   const api = {
     isRunning, shownMs, goalReached, goalTime, runningTask, lastTask, nextName,
     create, start, pause, reset, markDone, remove, removeDone, edit, setGoalNotified, fromV3,
-    changedAt, stamp, merge, parseDuration, parseChange, formatClock, formatShort, badgeText,
+    changedAt, stamp, merge, parseDuration, parseTimeField, formatClock, formatShort, badgeText,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

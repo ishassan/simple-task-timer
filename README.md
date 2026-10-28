@@ -53,7 +53,7 @@ This removes the "downloaded from the internet" mark that the browser put on the
 </p>
 
 - Click a task to change its name, time or goal. Done tasks go to a folded "Done" group.
-- To add time or take time away, write `+` or `-` and a duration in the Time field: `+5m`, `-5m`, `+1h`, `-30s`. With 1:00:00 on the timer, `+5m` makes it 1:05:00. The time does not go below 0.
+- To add time or take time away, write `+` or `-` and a duration in the Time field: `+5m`, `-5m`, `+1h5m`, `-30s`. You can also keep the time that the field shows and write the change after it: `1:00:00+5m`. With 1:00:00 on the timer, both make it 1:05:00. After another time, the change applies to that time: `2:00:00+5m` makes 2:05:00. The time does not go below 0.
 - The gear button opens Preferences: the keys, and Sync.
 - Keys in the list: Space starts or pauses, E edits, R resets, D marks done, Delete deletes, Ctrl+Z (Cmd+Z) undoes.
 

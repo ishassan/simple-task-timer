@@ -198,18 +198,16 @@ function saveEdit(form, id) {
 
   // A field the user did not change does not change the task. Then the
   // time of a running task does not go back to the time the form opened with.
-  // "+5m" or "-5m" adds time to the time shown when the user saves, or takes it away.
+  // "+5m", "-5m" or "0:25:00+5m" adds time or takes it away (see Tasks.parseTimeField).
   if (field(form, 'time').value.trim() !== form.initial.time) {
-    const add = Tasks.parseChange(field(form, 'time').value);
-    const ms = add == null ? Tasks.parseDuration(field(form, 'time').value) : add;
-    if (ms == null || Number.isNaN(ms)) {
+    const time = Tasks.parseTimeField(field(form, 'time').value, form.initial.time);
+    if (time == null || Number.isNaN(time)) {
       error.textContent = 'Write the time like 1:20:00, 45m or 1h 5m. Write +5m or -5m to add or take away time.';
       error.hidden = false;
       field(form, 'time').focus();
       return;
     }
-    if (add == null) changes.elapsedMs = ms;
-    else changes.addMs = ms;
+    Object.assign(changes, time);
   }
   if (field(form, 'goal').value.trim() !== form.initial.goal) {
     const ms = Tasks.parseDuration(field(form, 'goal').value);

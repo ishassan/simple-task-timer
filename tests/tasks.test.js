@@ -205,7 +205,7 @@ test('parseDuration reads the loose formats', () => {
   }
 });
 
-test('parseChange reads + and - in front of a duration', () => {
+test('parseTimeField: + and - after no time change the time shown at save', () => {
   const cases = {
     '+5m': 5 * MIN,
     '-5m': -5 * MIN,
@@ -221,11 +221,33 @@ test('parseChange reads + and - in front of a duration', () => {
     '  - 5m ': -5 * MIN,
     '+0:10:00': 10 * MIN,
     '+2': 2 * HOUR,
+    '+1h-5m': 55 * MIN,
+    '-5m+30s': -(4 * MIN + 30 * 1000),
   };
-  for (const [text, ms] of Object.entries(cases)) assert.equal(T.parseChange(text), ms, text);
-  for (const plain of ['', '5m', '1:00:00', null]) assert.equal(T.parseChange(plain), null, plain);
-  for (const bad of ['+', '-', '+abc', '-5x', '+-5m', '--5m']) {
-    assert.ok(Number.isNaN(T.parseChange(bad)), bad);
+  for (const [text, ms] of Object.entries(cases)) {
+    assert.deepEqual(T.parseTimeField(text, '7:28:42'), { addMs: ms }, text);
+  }
+});
+
+test('parseTimeField: + and - after the time the field showed change the time shown at save', () => {
+  assert.deepEqual(T.parseTimeField('7:28:42+5m', '7:28:42'), { addMs: 5 * MIN });
+  assert.deepEqual(T.parseTimeField('7:28:42 - 5m', '7:28:42'), { addMs: -5 * MIN });
+  assert.deepEqual(T.parseTimeField('7:28:42+1h-30s', '7:28:42'), { addMs: HOUR - 30 * 1000 });
+});
+
+test('parseTimeField: + and - after another time change that time', () => {
+  assert.deepEqual(T.parseTimeField('2:00:00+5m', '7:28:42'), { elapsedMs: 2 * HOUR + 5 * MIN });
+  assert.deepEqual(T.parseTimeField('1h-5m', '7:28:42'), { elapsedMs: 55 * MIN });
+  assert.deepEqual(T.parseTimeField('5m-10m', '7:28:42'), { elapsedMs: 0 });
+});
+
+test('parseTimeField: a time with no + or - sets the time', () => {
+  assert.deepEqual(T.parseTimeField('1:20:00', '7:28:42'), { elapsedMs: 80 * MIN });
+  assert.deepEqual(T.parseTimeField('45m', '7:28:42'), { elapsedMs: 45 * MIN });
+  assert.equal(T.parseTimeField('', '7:28:42'), null);
+  assert.equal(T.parseTimeField('   ', '7:28:42'), null);
+  for (const bad of ['+', '-', '+abc', '-5x', '+-5m', '--5m', '7:28:42+', 'abc+5m', '1:70+5m', 'abc']) {
+    assert.ok(Number.isNaN(T.parseTimeField(bad, '7:28:42')), bad);
   }
 });
 

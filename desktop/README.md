@@ -30,6 +30,10 @@ The "Mac release" workflow (`.github/workflows/mac-release.yml`) builds the app 
 2. One time only: add the repository secret `GOOGLE_DESKTOP_SECRET`, the client secret of "Simple Task Timer desktop" (see [`docs/desktop-and-sync-plan.md`](../docs/desktop-and-sync-plan.md), "Firebase project"). Without it, the workflow stops, because sign-in does not work in a build without the secret.
 3. In GitHub, open Actions, "Mac release", Run workflow. Write "What's new" there, with `;` between the items.
 
+To build the app of a release again (for example, after a fix in the build), run the workflow with "replace" on. It replaces the disk image in the release and writes the release notes again.
+
+The build signs the whole app ad hoc (`bundle > macOS > signingIdentity` is `"-"` in `src-tauri/tauri.conf.json`). Without it, only the program file has a signature, and `codesign --verify` says "code has no resources but signature indicates they must be present". The app is not notarized, so macOS 27 says that a downloaded copy "is damaged and can't be opened" until the user removes the quarantine mark (see the [main README](../README.md)).
+
 The app icons come from `icon.svg`, which fills the whole square so that macOS gives it the standard rounded shape. To make them again (then remove the files that `tauri.conf.json` does not list):
 
 ```bash

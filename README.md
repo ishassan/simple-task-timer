@@ -38,7 +38,13 @@
 | **Firefox** (computer and Android) | Install the add-on from [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/simple-task-timer/). |
 | **iPhone** (and other browsers) | Open [simple-task-timer-e196ff.web.app](https://simple-task-timer-e196ff.web.app) in Safari, then Share, Add to Home Screen. |
 
-The Mac app is not notarized by Apple. The first time you open it, macOS stops it: open System Settings, Privacy & Security, and click **Open Anyway**.
+The Mac app is not notarized by Apple, so macOS says that it "is damaged and can't be opened". The app is not damaged: macOS blocks apps from the internet that Apple did not notarize. Drag the app to Applications, then run this once in Terminal, and open the app:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Simple Task Timer.app"
+```
+
+This removes the "downloaded from the internet" mark that the browser put on the app.
 
 ## How it works
 

@@ -2,8 +2,11 @@
 # release v<version> as Simple-Task-Timer-<version>-mac-arm64.dmg. The
 # version comes from desktop/src-tauri/tauri.conf.json. When the release is
 # not there, the workflow makes it, with the release notes. When the release
-# already has the file, the workflow stops: raise the version first.
-# The app is ad-hoc signed and not notarized, as with a build on your Mac.
+# already has the file, the workflow stops: raise the version first, or run it
+# with "replace" to replace the file and write the release notes again.
+# The app is ad-hoc signed (signingIdentity "-" in tauri.conf.json) and not
+# notarized. Without the ad-hoc signature of the whole app, macOS says that a
+# downloaded copy "is damaged and can't be opened".
 # Needs the repository secret GOOGLE_DESKTOP_SECRET, the client secret of the
 # OAuth client "Simple Task Timer desktop" (see docs/desktop-and-sync-plan.md).
 name: Mac release
@@ -12,9 +15,14 @@ on:
   workflow_dispatch:
     inputs:
       notes:
-        description: "What's new, for a new release (put ; between the items)"
+        description: "What's new, for a new or replaced release (put ; between the items)"
         required: false
         default: ''
+      replace:
+        description: 'Replace the app in a release that has it, and write the release notes again'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: write
@@ -44,6 +52,7 @@ jobs:
         run: echo "version=$(node -p "require('./desktop/src-tauri/tauri.conf.json').version")" >> "$GITHUB_OUTPUT"
 
       - name: Stop when the release already has the app
+        if: ${{ !inputs.replace }}
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
@@ -84,12 +93,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
           NOTES: ${{ inputs.notes }}
+          REPLACE: ${{ inputs.replace }}
         run: |
           file="$RUNNER_TEMP/Simple-Task-Timer-$VERSION-mac-arm64.dmg"
-          if gh release view "v$VERSION" > /dev/null 2>&1; then
-            gh release upload "v$VERSION" "$file"
-            exit 0
-          fi
           {
             echo '## Downloads'
             echo
@@ -99,7 +105,15 @@ jobs:
             echo
             echo 'The Firefox add-on is on [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/simple-task-timer/). On the iPhone, use the web version: open [simple-task-timer-e196ff.web.app](https://simple-task-timer-e196ff.web.app) in Safari, then Share, Add to Home Screen.'
             echo
-            echo 'The Mac app is not notarized by Apple. The first time you open it, macOS stops it: open System Settings, Privacy & Security, and click **Open Anyway**.'
+            cat <<'TEXT'
+          The Mac app is not notarized by Apple, so macOS says that it "is damaged and can't be opened". The app is not damaged: macOS blocks apps from the internet that Apple did not notarize. Drag the app to Applications, then run this once in Terminal, and open the app:
+
+          ```bash
+          xattr -dr com.apple.quarantine "/Applications/Simple Task Timer.app"
+          ```
+
+          This removes the "downloaded from the internet" mark that the browser put on the app.
+          TEXT
             if [ -n "$NOTES" ]; then
               echo
               echo "## What's new"
@@ -107,5 +121,14 @@ jobs:
               printf '%s\n' "$NOTES" | tr ';' '\n' | sed '/^[[:space:]]*$/d; s/^[[:space:]]*/- /; s/[[:space:]]*$//'
             fi
           } > "$RUNNER_TEMP/notes.md"
+          if gh release view "v$VERSION" > /dev/null 2>&1; then
+            if [ "$REPLACE" = true ]; then
+              gh release upload "v$VERSION" "$file" --clobber
+              gh release edit "v$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
+            else
+              gh release upload "v$VERSION" "$file"
+            fi
+            exit 0
+          fi
           gh release create "v$VERSION" "$file" --target "$GITHUB_SHA" \
             --title "Simple Task Timer $VERSION" --notes-file "$RUNNER_TEMP/notes.md"

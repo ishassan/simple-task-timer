@@ -40,6 +40,9 @@
       "app"
     ],
     "category": "Productivity",
+    "macOS": {
+      "signingIdentity": "-"
+    },
     "copyright": "Copyright (C) 2026 Islam Hassan",
     "icon": [
       "icons/32x32.png",

@@ -1,27 +1,24 @@
 # Builds the web version (web/) and puts it on Firebase Hosting:
 # simple-task-timer-e196ff.web.app.
-# Needs the repository secret FIREBASE_SERVICE_ACCOUNT: the JSON key of a
-# Google Cloud service account of the project with the roles Firebase Hosting
-# Admin and API Keys Viewer.
+# It signs in to Google Cloud with Workload Identity Federation, with no key:
+# GitHub gives the run a short-lived token, and Google lets runs from this
+# repository act as the service account github-web-deploy (roles Firebase
+# Hosting Admin and API Keys Viewer). The pool "github" and its provider
+# "simple-task-timer" accept only this repository (see web/README.md).
 name: Web deploy
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # the token that Workload Identity Federation exchanges
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Check the secret
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: |
-          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
-            echo "::error::Add the repository secret FIREBASE_SERVICE_ACCOUNT (the JSON key of a service account with Firebase Hosting Admin and API Keys Viewer)."
-            exit 1
-          fi
-
       - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v7
@@ -39,12 +36,13 @@ jobs:
         working-directory: firebase
         run: npm run web
 
+      # Writes a credentials file and sets GOOGLE_APPLICATION_CREDENTIALS,
+      # which the Firebase CLI reads
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/427469644050/locations/global/workloadIdentityPools/github/providers/simple-task-timer
+          service_account: github-web-deploy@simple-task-timer-e196ff.iam.gserviceaccount.com
+
       - name: Deploy to Firebase Hosting
         working-directory: firebase
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-        run: |
-          key="$RUNNER_TEMP/firebase-key.json"
-          trap 'rm -f "$key"' EXIT
-          (umask 077 && printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$key")
-          GOOGLE_APPLICATION_CREDENTIALS="$key" npx firebase deploy --only hosting --non-interactive
+        run: npx firebase deploy --only hosting --non-interactive

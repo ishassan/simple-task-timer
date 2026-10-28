@@ -21,10 +21,12 @@ Needs the Firebase bundle (see the [main README](../README.md)) and `firebase lo
 cd firebase && npm run deploy-web
 ```
 
-Or deploy from GitHub, with no computer: open Actions, "Web deploy" (`.github/workflows/web-deploy.yml`), Run workflow. It needs the repository secret `FIREBASE_SERVICE_ACCOUNT`, one time only:
+Or deploy from GitHub, with no computer: open Actions, "Web deploy" (`.github/workflows/web-deploy.yml`), Run workflow. The workflow uses no key and no secret. It signs in with Workload Identity Federation: GitHub gives the run a short-lived token, and Google lets runs from this repository act as the service account `github-web-deploy`. This setup is in the Google Cloud project `simple-task-timer-e196ff`:
 
-1. In the Google Cloud console, project `simple-task-timer-e196ff`, IAM and Admin, Service accounts: create a service account with the roles Firebase Hosting Admin and API Keys Viewer.
-2. In the service account, Keys, Add key, JSON. Put all the text of the key file into the secret.
+- The service account `github-web-deploy`, with the roles Firebase Hosting Admin and API Keys Viewer. It has no keys.
+- The workload identity pool `github`, with the OIDC provider `simple-task-timer`. The provider accepts tokens from `https://token.actions.githubusercontent.com` only when `assertion.repository` is `ishassan/simple-task-timer`.
+- On the service account, the role Workload Identity User for `principalSet://iam.googleapis.com/projects/427469644050/locations/global/workloadIdentityPools/github/attribute.repository/ishassan/simple-task-timer`.
+- The APIs IAM Service Account Credentials and Security Token Service are on.
 
 ## Test
 
